@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pilar Service: catálogo de SKUs y armador de BOM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --eb-15:#001E5B; --eb-30:#022AC0; --eb-50:#066AFE; --cloud-68:#00B3FF; --cloud-95:#EAF5FE;
+  --yellow-80:#FCC003; --pink-60:#FF538A; --teal-60:#06A59A; --gray-bg:#F5F8FB;
+  --bg:var(--gray-bg); --surface:#FFFFFF; --surface-2:#F1F5FA; --field:#F8FAFD;
+  --ink:#0A1F4D; --muted:#55647F; --line:#DDE5EF; --line-2:#C7D3E3;
+  --primary:var(--eb-50); --primary-hover:#0558D6; --primary-ink:var(--eb-30); --primary-soft:var(--cloud-95);
+  --ring:rgba(6,106,254,.22); --focus:#066AFE;
+  --teal:#04756D; --teal-soft:#DCF4F1; --amber:#875800; --amber-soft:#FFF4D1;
+  --violet:#5A3FD1; --violet-soft:#ECE8FF; --rose:#B0194A; --rose-soft:#FFE4EC;
+  --st-v:var(--teal-60); --st-bi:var(--yellow-80); --st-pi:#8B7CF6; --st-nv:var(--pink-60);
+  --g-base:#022AC0; --g-cc:#066AFE; --g-msg:#00B3FF; --g-wem:#06A59A; --g-ai:#FF538A; --g-it:#FCC003; --g-kn:#8A99B4;
+  --seg-bg:#E4EBF5; --row-hover:#F5F9FE; --col-hover:rgba(6,106,254,.055); --mark:rgba(252,192,3,.42);
+  --switch-off:#C7D3E3; --edge:rgba(0,30,91,.08); --float:0 12px 32px -16px rgba(0,30,91,.38);
+  --ease:cubic-bezier(.2,.8,.2,1); --spring:cubic-bezier(.3,1,.4,1);
+  --r-s:8px; --r-m:12px; --r-l:16px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#050E26; --surface:#0B1838; --surface-2:#102148; --field:#0D1C40;
+    --ink:#E7EEFB; --muted:#9AABCB; --line:#1C2D57; --line-2:#2B4070;
+    --primary:#3D8BFF; --primary-hover:#5C9DFF; --primary-ink:#8DBEFF; --primary-soft:#0F2A5E;
+    --ring:rgba(61,139,255,.38); --focus:#8DBEFF;
+    --teal:#46D3C5; --teal-soft:#0B3534; --amber:#FFD15C; --amber-soft:#30270B;
+    --violet:#B6AAFF; --violet-soft:#241F52; --rose:#FF8FB1; --rose-soft:#3F1228;
+    --g-base:#5B7BFF; --g-kn:#7487AA;
+    --seg-bg:#0E1C42; --row-hover:#0E1E46; --col-hover:rgba(61,139,255,.09); --mark:rgba(252,192,3,.32);
+    --switch-off:#2B4070; --edge:rgba(0,0,0,.35); --float:0 14px 36px -14px rgba(0,0,0,.7);
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:calc(var(--tabh,64px) + 16px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+h1,h2,h3,legend,.h2{font-family:Manrope,Inter,system-ui,sans-serif}
+a{color:var(--primary-ink);text-underline-offset:2px;text-decoration-thickness:1px}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding:22px 20px 72px}
+
+/* ---------- hero: the one bold element ---------- */
+.hero{position:relative;isolation:isolate;color:#fff;overflow:hidden;
+  background:radial-gradient(900px 440px at 92% -12%,rgba(0,179,255,.30),transparent 62%),
+             radial-gradient(760px 420px at -8% 115%,rgba(6,106,254,.42),transparent 62%),var(--eb-15)}
+.hero-in{max-width:1240px;margin:0 auto;padding:24px 20px 34px}
+.brand{display:block;height:34px;width:auto;margin:0 0 26px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.02fr);gap:44px;align-items:start}
+.hero h1{font-size:clamp(32px,4.3vw,54px);line-height:1.03;letter-spacing:-.032em;font-weight:800;margin:0 0 16px;text-wrap:balance}
+.hero h1 span{display:block}
+.lede{margin:0;color:rgba(234,245,254,.80);max-width:56ch;font-size:15.5px;line-height:1.6}
+.ledger{margin-top:28px}
+.ledger-bar{display:flex;height:14px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08)}
+.ledger-bar span{flex:0 0 0;min-width:0;height:100%;box-shadow:inset -2px 0 0 var(--eb-15);transition:flex-grow 1.1s var(--ease)}
+.ready .ledger-bar span{flex-grow:var(--g)}
+.ledger-keys{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:stretch}
+.lk{appearance:none;font:inherit;color:#fff;text-align:left;cursor:pointer;display:grid;grid-template-columns:auto 1fr;column-gap:7px;align-items:center;
+  min-width:118px;padding:11px 14px 10px;border-radius:var(--r-m);border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.045);
+  transition:background .2s,border-color .2s,opacity .25s,transform .12s var(--ease)}
+.lk b{grid-column:1/-1;font:800 27px/1 Manrope,Inter,sans-serif;letter-spacing:-.025em;font-variant-numeric:tabular-nums;margin-bottom:6px}
+.lk .dot{grid-column:1;grid-row:2;margin:0}
+.lk span{grid-column:2;grid-row:2;font-size:12.5px;color:rgba(234,245,254,.80);white-space:nowrap}
+.lk:hover{background:rgba(255,255,255,.09)}
+.lk:active{transform:scale(.97)}
+.lk[aria-pressed="true"]{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.55)}
+.ledger.filtering .lk[aria-pressed="false"]{opacity:.5}
+.lk-total{align-self:center;padding:0 8px;font-size:13px;color:rgba(234,245,254,.66)}
+.k-v{background:var(--st-v)}.k-bi{background:var(--st-bi)}.k-pi{background:var(--st-pi)}.k-nv{background:var(--st-nv)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px;flex:none}
+
+.famchart{margin:0;padding:16px 14px 12px;border-radius:20px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.11);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.famchart figcaption{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:0 6px 10px}
+.famchart figcaption b{font:700 15.5px/1.3 Manrope,Inter,sans-serif;letter-spacing:-.012em}
+.famchart figcaption span{font-size:12.5px;color:rgba(234,245,254,.62);font-variant-numeric:tabular-nums}
+.fr{appearance:none;border:0;background:none;color:inherit;font:inherit;width:100%;text-align:left;cursor:pointer;
+  display:grid;grid-template-columns:minmax(0,14.2em) minmax(0,1fr) 2.4em;gap:12px;align-items:center;padding:5px 6px;border-radius:var(--r-s);
+  transition:background .18s,opacity .25s,transform .12s var(--ease)}
+.fr:hover,.fr:focus-visible{background:rgba(255,255,255,.08)}
+.fr:active{transform:scale(.985)}
+.fr[aria-pressed="true"]{background:rgba(255,255,255,.14)}
+.famchart.filtering .fr[aria-pressed="false"]{opacity:.42}
+.fr-name{font-size:13px;color:rgba(234,245,254,.88);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fr-track{display:block;height:10px}
+.fr-fill{display:flex;height:100%;min-width:5px;border-radius:999px;overflow:hidden;transform-origin:left center;transform:scaleX(0);
+  transition:transform .9s var(--ease) calc(var(--i) * 45ms + 260ms)}
+.ready .fr-fill{transform:none}
+.fr-fill i{display:block;height:100%;min-width:0;box-shadow:inset -1.5px 0 0 var(--eb-15)}
+.fr-n{font:700 14px/1 Manrope,Inter,sans-serif;font-variant-numeric:tabular-nums;text-align:right}
+.fam-detail{margin:10px 6px 0;min-height:2.9em;font-size:12.5px;line-height:1.45;color:rgba(234,245,254,.74)}
+
+/* ---------- tab bar: translucent floating chrome ---------- */
+.tabbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 76%,transparent);
+  -webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%)}
+.tabbar::after{content:"";position:absolute;left:0;right:0;top:100%;height:16px;pointer-events:none;background:linear-gradient(var(--edge),transparent);opacity:0;transition:opacity .3s}
+.tabbar.stuck::after{opacity:1}
+.tabbar-in{max-width:1240px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:16px}
+.mini{margin-left:auto;display:flex;align-items:center;gap:9px;font:700 14px/1 Manrope,Inter,sans-serif;letter-spacing:-.01em;white-space:nowrap;
+  opacity:0;transform:translateY(-4px);transition:opacity .3s,transform .3s var(--ease);pointer-events:none}
+.mini img{height:20px;width:auto}
+.stuck .mini{opacity:1;transform:none}
+nav.tabs{position:relative;display:flex;gap:2px;padding:4px;border-radius:13px;background:var(--seg-bg);overflow-x:auto;scrollbar-width:none;max-width:100%}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{position:relative;z-index:1;appearance:none;border:0;background:none;color:var(--muted);font:600 14px/1 Inter,system-ui,sans-serif;
+  padding:10px 16px;border-radius:9px;cursor:pointer;white-space:nowrap;transition:color .2s,transform .12s var(--ease)}
+nav.tabs button:hover{color:var(--ink)}
+nav.tabs button[aria-selected="true"]{color:var(--ink)}
+nav.tabs button:active{transform:scale(.96)}
+.thumb{position:absolute;z-index:0;top:4px;bottom:4px;left:0;width:0;border-radius:9px;background:var(--surface);
+  box-shadow:0 1px 2px rgba(0,30,91,.10),0 4px 14px -4px rgba(0,30,91,.16);
+  transition:transform .42s var(--spring),width .42s var(--spring)}
+.thumb.instant{transition:none}
+section[role=tabpanel].in{animation:panelIn .34s var(--ease)}
+@keyframes panelIn{from{opacity:0;transform:translateY(8px)}}
+
+/* ---------- surfaces and fields ---------- */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:20px}
+.filters{display:grid;grid-template-columns:2fr 1.3fr 1fr auto;gap:12px;align-items:end}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--muted);font-weight:600}
+input[type=search],input[type=number],select{font:500 14.5px/1.25 Inter,system-ui,sans-serif;color:var(--ink);background-color:var(--field);
+  border:1px solid var(--line-2);border-radius:10px;padding:9px 12px;min-height:40px;min-width:0;width:100%;
+  transition:border-color .15s,box-shadow .15s,background-color .15s}
+input[type=search]:hover,input[type=number]:hover,select:hover{border-color:var(--muted)}
+input[type=search]:focus,input[type=number]:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--ring);background-color:var(--surface)}
+input[type=number]{font-variant-numeric:tabular-nums}
+input[type=search]{padding-left:36px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%237A8AA6' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='m11 11 3.5 3.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:12px center}
+select{appearance:none;-webkit-appearance:none;padding-right:34px;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%237A8AA6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m1 1.5 5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center}
+.check{display:flex;align-items:center;gap:10px;min-height:38px;font-size:14px;color:var(--ink);font-weight:500;cursor:pointer}
+.check input{appearance:none;-webkit-appearance:none;flex:none;position:relative;width:40px;height:24px;margin:0;border-radius:999px;background:var(--switch-off);cursor:pointer;transition:background .22s}
+.check input::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:999px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.28),0 0 0 .5px rgba(0,0,0,.04);transition:transform .3s var(--spring),width .16s var(--ease)}
+.check input:checked{background:var(--primary)}
+.check input:checked::after{transform:translateX(16px)}
+.check:active input::after{width:24px}
+.check:active input:checked::after{transform:translateX(12px)}
+.count{margin:16px 4px 10px;color:var(--muted);font-size:13.5px;font-variant-numeric:tabular-nums}
+.note{font-size:12.5px;color:var(--muted)}
+
+/* ---------- catalog table ---------- */
+.tablebox{max-height:72vh;overflow:auto;border:1px solid var(--line);border-radius:var(--r-l);background:var(--surface)}
+table{width:100%;border-collapse:separate;border-spacing:0}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{position:sticky;top:0;z-index:1;font-size:12.5px;font-weight:600;color:var(--muted);background:color-mix(in srgb,var(--surface-2) 86%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+tbody tr{transition:background .12s}
+tbody tr:hover{background:var(--row-hover)}
+tbody tr:last-child td{border-bottom:0}
+td.sku{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600;font-size:13.5px;color:var(--muted)}
+td.nm{font-weight:600}
+td.nm a{color:var(--ink);text-decoration:none;background:linear-gradient(currentColor,currentColor) 0 100%/0 1px no-repeat;transition:background-size .28s var(--ease),color .15s}
+td.nm a:hover{color:var(--primary-ink);background-size:100% 1px}
+mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 1px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;line-height:1.3;padding:3px 9px 3px 8px;border-radius:999px;white-space:nowrap;vertical-align:1px}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.b-v{background:var(--teal-soft);color:var(--teal)}.b-bi{background:var(--amber-soft);color:var(--amber)}
+.b-pi{background:var(--violet-soft);color:var(--violet)}.b-nv{background:var(--rose-soft);color:var(--rose)}
+.tag{display:inline-block;font-size:11.5px;font-weight:500;color:var(--muted);border:1px solid var(--line-2);border-radius:6px;padding:0 6px;margin:4px 4px 0 0}
+
+/* ---------- BOM calculator ---------- */
+.calc{display:grid;grid-template-columns:minmax(300px,400px) minmax(0,1fr);gap:20px;align-items:start}
+#cform{padding:4px 20px 18px}
+fieldset{border:0;margin:0;padding:0 0 18px;border-bottom:1px solid var(--line);min-width:0}
+fieldset:last-of-type{border-bottom:0}
+legend{font-weight:700;font-size:15.5px;letter-spacing:-.012em;margin:0 0 10px;padding:18px 0 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg label{position:relative}
+.seg input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
+.seg span{display:inline-block;padding:8px 14px;border:1px solid var(--line-2);border-radius:999px;background:var(--surface);font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;
+  transition:background .2s,border-color .2s,color .2s,box-shadow .2s,transform .12s var(--ease)}
+.seg label:hover span{border-color:var(--primary);color:var(--ink)}
+.seg label:active span{transform:scale(.96)}
+.seg input:checked+span{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 4px 12px -5px var(--primary)}
+.seg input:focus-visible+span{outline:2px solid var(--focus);outline-offset:2px}
+.sub{margin-top:12px;padding:12px;border-radius:var(--r-m);background:var(--surface-2);border:1px solid var(--line);animation:subIn .3s var(--ease)}
+.sub .seg span{background:var(--surface)}
+.sub .seg input:checked+span{background:var(--primary)}
+#afsWrap,#plusWrap{animation:subIn .3s var(--ease)}
+@keyframes subIn{from{opacity:0;transform:translateY(-4px)}}
+
+.bomhead{margin-bottom:14px}
+.bom-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 20px;align-items:flex-end}
+.bom-head h2{margin:0;font-size:21px;letter-spacing:-.018em}
+.totals{display:flex;gap:28px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.totals div{font-size:12.5px;color:var(--muted);font-weight:600}
+.totals b{display:block;margin-top:3px;font:800 28px/1.08 Manrope,Inter,sans-serif;letter-spacing:-.028em;color:var(--ink);font-variant-numeric:tabular-nums}
+.compo{margin:16px 0 14px}
+.compo-cap{margin:0 0 8px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.compo-bar{display:flex;height:12px;border-radius:999px;overflow:hidden;background:var(--surface-2)}
+.compo-bar span{flex:0 0 0;min-width:0;height:100%;box-shadow:inset -2px 0 0 var(--surface);transition:flex-grow .6s var(--spring)}
+.compo-keys{display:flex;flex-wrap:wrap;gap:5px 16px;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.compo-keys span{white-space:nowrap}
+.compo-keys b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums;margin-left:3px}
+.compo-keys small{font-size:11.5px;margin-left:3px;font-variant-numeric:tabular-nums}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{appearance:none;display:inline-flex;align-items:center;gap:8px;min-height:40px;font:600 14px/1 Inter,system-ui,sans-serif;border:1px solid var(--primary);background:var(--primary);color:#fff;
+  padding:10px 16px;border-radius:10px;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 6px 16px -8px var(--primary);
+  transition:background .18s,border-color .18s,color .18s,box-shadow .18s,transform .12s var(--ease)}
+.btn:hover{background:var(--primary-hover);border-color:var(--primary-hover)}
+.btn:active{transform:scale(.97)}
+.btn svg{width:16px;height:16px;flex:none}
+.btn.ghost{background:transparent;color:var(--primary-ink);border-color:var(--line-2);box-shadow:none}
+.btn.ghost:hover{background:var(--primary-soft);border-color:var(--primary)}
+.btn .ic-ok{display:none}
+.btn.ok{border-color:var(--teal-60);color:var(--teal);background:var(--teal-soft)}
+.btn.ok .ic-ok{display:block}.btn.ok .ic-def{display:none}
+.pulse{animation:pulse .9s var(--ease)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 var(--ring)}40%{box-shadow:0 0 0 6px var(--ring)}100%{box-shadow:0 0 0 0 transparent}}
+
+.bomline{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:14px;padding:14px 16px 14px 20px;margin-bottom:10px;background:var(--surface);transition:border-color .2s}
+.bomline::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--gc,var(--line-2))}
+.bomline:hover{border-color:var(--line-2)}
+.bomline.incl{background:var(--surface-2);border-style:dashed}
+.bomline.enter{animation:lineIn .55s var(--ease)}
+@keyframes lineIn{0%{opacity:0;transform:translateY(-6px) scale(.985);box-shadow:0 0 0 3px var(--ring)}60%{box-shadow:0 0 0 3px var(--ring)}100%{box-shadow:0 0 0 0 transparent}}
+.bl-top{display:flex;justify-content:space-between;gap:12px}
+.bl-name{font-weight:650;font-size:15px;line-height:1.35}
+.bl-name a{color:var(--ink);text-decoration:none}
+.bl-name a:hover{color:var(--primary-ink);text-decoration:underline}
+.bl-sku{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:5px;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bl-qty{flex:none;font:800 24px/1 Manrope,Inter,sans-serif;letter-spacing:-.025em;font-variant-numeric:tabular-nums;white-space:nowrap;transform-origin:right center}
+.bl-qty.bump{animation:bump .5s var(--ease)}
+@keyframes bump{35%{transform:scale(1.14);color:var(--primary)}}
+.bl-body{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px;font-size:13.5px;line-height:1.5}
+.bl-body h4{margin:0 0 3px;font-size:12px;font-weight:600;color:var(--muted)}
+.bl-body p{margin:0}
+.warn{color:var(--amber)}
+.bl-price{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.bl-price label{display:flex;align-items:center;gap:8px}
+.bl-price input{width:120px;min-height:34px;padding:6px 10px}
+.bl-price select{width:auto;min-height:34px;padding-top:6px;padding-bottom:6px}
+.bl-price [data-t]{margin-left:auto;font-size:13.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.ref{font-size:11.5px;font-weight:600;color:var(--violet);background:var(--violet-soft);border-radius:999px;padding:2px 8px}
+.alert{display:flex;gap:10px;align-items:flex-start;border:1px solid color-mix(in srgb,var(--yellow-80) 60%,transparent);background:var(--amber-soft);color:var(--ink);border-radius:var(--r-m);padding:11px 14px;margin-bottom:10px;font-size:14px}
+.alert::before{content:"!";flex:none;width:20px;height:20px;margin-top:1px;border-radius:50%;background:var(--yellow-80);color:#3A2700;font:800 12px/20px Manrope,Inter,sans-serif;text-align:center}
+.alert.info{border-color:var(--line);background:var(--primary-soft)}
+.alert.info::before{content:"i";background:var(--primary);color:#fff}
+.empty{color:var(--muted);text-align:center;padding:36px 20px;border-style:dashed}
+.jump{display:none;position:sticky;bottom:12px;z-index:6;justify-content:space-between;align-items:center;gap:10px;margin-top:14px;padding:8px 8px 8px 18px;border-radius:999px;
+  background:color-mix(in srgb,var(--surface) 80%,transparent);-webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%);
+  border:1px solid var(--line);box-shadow:var(--float);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.jump a{flex:none;background:var(--primary);color:#fff;text-decoration:none;font-weight:700;border-radius:999px;padding:9px 16px}
+
+/* ---------- caveats ---------- */
+.caveats h3{margin:28px 0 8px;font-size:17px;letter-spacing:-.012em}
+.caveats ul{margin:0;padding-left:20px;max-width:82ch}
+.caveats li{margin:7px 0;padding-left:2px}
+.caveats li::marker{color:var(--primary)}
+.src{font-size:13px;color:var(--muted);max-width:90ch;margin:12px 0 0;padding:10px 12px;border-radius:var(--r-s);background:var(--surface-2)}
+footer{margin-top:32px;color:var(--muted);font-size:12.5px;line-height:1.6;max-width:92ch}
+
+/* ---------- editions ---------- */
+.subnav{position:sticky;top:var(--tabh,64px);z-index:4;display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px;padding:8px 0;
+  background:color-mix(in srgb,var(--bg) 80%,transparent);-webkit-backdrop-filter:blur(16px) saturate(170%);backdrop-filter:blur(16px) saturate(170%)}
+.subnav a{font-size:13.5px;font-weight:600;text-decoration:none;color:var(--muted);border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 13px;
+  transition:color .2s,border-color .2s,background .2s,transform .12s var(--ease)}
+.subnav a:hover{color:var(--ink);border-color:var(--primary)}
+.subnav a:active{transform:scale(.96)}
+.subnav a[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+#t-ed .panel{margin-bottom:14px;scroll-margin-top:calc(var(--tabh,64px) + 64px)}
+.h2{font-size:21px;margin:0 0 6px;letter-spacing:-.018em}
+.lead{margin:0 0 16px;color:var(--muted);max-width:78ch}
+.mapgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.mapcard{display:flex;flex-wrap:wrap;align-items:baseline;align-content:flex-start;gap:2px 0;border:1px solid var(--line);border-radius:var(--r-m);padding:14px 16px;background:var(--surface-2);position:relative;overflow:hidden}
+.mapcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--primary)}
+.mapcard.muted::before{background:var(--yellow-80)}
+.mapcard .old{color:var(--muted);font-size:13.5px}
+.mapcard .arrow{margin:0 8px;color:var(--primary);font-weight:700}
+.mapcard.muted .arrow{color:var(--amber)}
+.mapcard .new{font:800 16px/1.25 Manrope,Inter,sans-serif;letter-spacing:-.015em}
+.mapcard p{flex-basis:100%;margin:8px 0 0;font-size:13.5px;line-height:1.5}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--muted);margin-bottom:12px}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{font-style:normal}
+.colpick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.colpick label{position:relative}.colpick input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
+.colpick span{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:5px 12px;border:1px solid var(--line-2);border-radius:999px;cursor:pointer;color:var(--muted);
+  transition:background .2s,border-color .2s,color .2s,transform .12s var(--ease)}
+.colpick span::before{content:"";width:8px;height:8px;border-radius:50%;border:1.5px solid currentColor;transition:background .2s}
+.colpick input:checked+span{border-color:var(--ink);color:var(--ink)}
+.colpick input:checked+span::before{background:currentColor}
+.colpick label:active span{transform:scale(.96)}
+.colpick input:focus-visible+span{outline:2px solid var(--focus);outline-offset:2px}
+.mxbox{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-m)}
+table.mx{min-width:760px}
+table.mx th,table.mx td{font-size:13.5px;padding:10px 12px;transition:background .12s}
+table.mx thead th{text-align:center;position:static}
+table.mx thead tr:first-child th{font-size:12px;font-weight:700;color:var(--ink);background:var(--surface)}
+table.mx th.cap,table.mx td.cap{position:sticky;left:0;z-index:1;background:var(--surface);text-align:left;min-width:200px;font-weight:600}
+table.mx td.c{text-align:center;min-width:112px}
+table.mx td.c small{display:block;color:var(--muted);font-size:11.5px;line-height:1.35;margin-top:4px}
+table.mx .grp2{border-left:2px solid var(--primary)}
+table.mx tbody tr:hover td,table.mx tbody tr:hover td.cap{background:var(--row-hover)}
+table.mx .hc{background:var(--col-hover)!important}
+table.mx thead th.hc{color:var(--primary-ink)}
+.cell{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;font-weight:800;font-size:12.5px;line-height:1;font-style:normal;box-sizing:border-box}
+.cell.y{background:var(--teal-60);color:#fff}
+.cell.a{background:var(--primary-soft);color:var(--primary-ink);border:1.5px solid currentColor}
+.cell.n{background:transparent;color:var(--muted);border:1px solid var(--line-2)}
+.cell.v{background:var(--violet-soft);color:var(--violet);border:1.5px dashed currentColor}
+.cell.t{width:auto;height:auto;border-radius:7px;padding:3px 9px;background:var(--surface-2);color:var(--ink);font:700 13px/1.3 Manrope,Inter,sans-serif;font-variant-numeric:tabular-nums;border:0}
+.minibar{display:block;height:5px;width:calc(var(--w) * 84px);margin:7px auto 0;border-radius:999px;background:linear-gradient(90deg,var(--eb-50),var(--cloud-68));transform-origin:left;animation:grow .8s var(--ease) both}
+@keyframes grow{from{transform:scaleX(0)}}
+.a4x{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.a4x>div{padding:14px 16px;border-radius:var(--r-m);background:var(--surface-2);border:1px solid var(--line)}
+.a4x h3{font-size:15px;margin:0 0 6px;letter-spacing:-.01em}.a4x ul{margin:0;padding-left:18px;font-size:14px}.a4x li{margin:5px 0}
+.a4x li::marker{color:var(--primary)}
+.exgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.ex{border:1px solid var(--line);border-radius:var(--r-m);padding:16px;background:var(--surface);transition:border-color .2s,box-shadow .2s}
+.ex:hover{border-color:var(--line-2);box-shadow:var(--float)}
+.ex h3{margin:0;font-size:15.5px;line-height:1.3;letter-spacing:-.012em}
+.ex .meta{font-size:12.5px;color:var(--muted);margin:3px 0 10px}
+.ex p{margin:8px 0 0;font-size:14px;line-height:1.5}
+.ex p b{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:2px}
+.ex .scn{padding:10px 12px;border-radius:var(--r-s);background:var(--surface-2);border-left:3px solid var(--g-msg)}
+.pick{display:grid;gap:8px}
+.pk{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;border:1px solid var(--line);border-radius:var(--r-m);padding:14px 16px;transition:border-color .2s,background .2s}
+.pk:hover{border-color:var(--primary);background:var(--row-hover)}
+.pk h3{margin:0 0 3px;font-size:15px;letter-spacing:-.01em}.pk p{margin:0;font-size:14px;color:var(--muted)}
+.glo{display:grid;grid-template-columns:max-content 1fr;gap:8px 20px;margin:0;font-size:14px}
+.glo dt{font-weight:700;font-family:Manrope,Inter,sans-serif}.glo dd{margin:0;color:var(--muted)}
+
+/* ---------- responsive ---------- */
+@media (min-width:861px) and (min-height:760px){
+  .bomhead{position:sticky;top:calc(var(--tabh,64px) + 8px);z-index:5;background:color-mix(in srgb,var(--surface) 84%,transparent);
+    -webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);box-shadow:var(--float)}
+}
+@media (max-width:1020px){
+  .hero-grid{grid-template-columns:1fr;gap:26px}
+}
+@media (max-width:860px){
+  .hero-in{padding:20px 16px 26px}
+  .brand{height:28px;margin-bottom:18px}
+  .fr{grid-template-columns:minmax(0,10.5em) minmax(0,1fr) 2.2em;gap:10px}
+  .lk{min-width:0;flex:1 1 calc(50% - 4px)}
+  .lk-total{flex-basis:100%;padding:2px 2px 0}
+  .tabbar-in{padding:8px 12px}
+  .mini{display:none}
+  .wrap{padding:16px 14px 64px}
+  .filters{grid-template-columns:1fr 1fr}
+  .filters label:first-child{grid-column:1/-1}
+  .filters .check{grid-column:1/-1}
+  .jump{display:flex}
+  .calc{grid-template-columns:1fr}
+  .bl-body{grid-template-columns:1fr}
+  thead{display:none}
+  table,tbody,tr,td{display:block;width:100%}
+  .tablebox{max-height:none;border:0;background:none;overflow:visible}
+  tbody tr{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+  tbody tr:hover{background:var(--surface)}
+  td{border:0!important;padding:2px 0}
+  td.sku::before{content:"SKU ";color:var(--muted);font-weight:500}
+  .subnav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.subnav a{white-space:nowrap}
+  .pk{grid-template-columns:1fr}.glo{grid-template-columns:1fr}.glo dd{margin-bottom:8px}
+  table.mx thead{display:table-header-group} table.mx{display:table} table.mx tbody{display:table-row-group}
+  table.mx tr{display:table-row;padding:0;border:0;background:none;border-radius:0;margin:0} table.mx td,table.mx th{display:table-cell;border-bottom:1px solid var(--line)!important}
+  table.mx td.sku::before{content:none}
+}
+
+/* ---------- accessibility preferences ---------- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0ms!important;scroll-behavior:auto!important}
+  section[role=tabpanel].in{animation:fadeOnly .2s ease!important}
+  @keyframes fadeOnly{from{opacity:0}}
+}
+@media (prefers-reduced-transparency:reduce){
+  .tabbar,.subnav{background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none}
+  .bomhead,.jump{background:var(--surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .famchart{background:rgba(255,255,255,.07);-webkit-backdrop-filter:none;backdrop-filter:none}
+  th{background:var(--surface-2);-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+@media (prefers-contrast:more) and (prefers-color-scheme:light){
+  :root{--line:#8796B0;--line-2:#5E6E8C;--muted:#34425C}
+}
+@media (prefers-contrast:more) and (prefers-color-scheme:dark){
+  :root{--line:#4A5F8C;--line-2:#7084B0;--muted:#C4D0E6}
+}
+@media (prefers-contrast:more){
+  .tabbar,.subnav{background:var(--bg)}
+  .tabbar{border-bottom:1px solid var(--line-2)}
+  .lk,.famchart{border-color:rgba(255,255,255,.6)}
+  .lede,.fr-name,.lk span,.fam-detail{color:#fff}
+}
+@media print{
+  .tabbar,.jump,.subnav,.actions{display:none!important}
+  .hero{background:#001E5B!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .bomhead{position:static!important;box-shadow:none!important}
+}
+</style>
+</head>
+<body>
+<header class="hero">
+ <div class="hero-in">
+  <img class="brand" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAM4AAACRCAYAAACLx4fmAAAACXBIWXMAAAsSAAALEgHS3X78AAAR6ElEQVR4nO2dvW4bSRLH/zSkwAokHnTAKrAhagMH50BcYDfYC2wuNiUg7hOY+wSmn8D0E5h+Ao+eYGksg7vgzuQGt8EZWDJwcA7WJNaBDJxwpAI7kABeUNNkT0/P9/dM/QDCJsXpbs70f7qqurqntl6vUVRqIzQANAA0AdQ9vj4Xr3Ub8wSbxVSAWpGEUxuhAxJJC8DDCEWtAEwBjAGM122Mo7aNqRa5Fk5thDqAjvk6S7CqFYAhgOG6jWGC9TAlIZfCMU2wPkgwBylXvwIwAGCwScc4kSvh1EZogQQTxQyLk3MAfRYQo5IL4UgjzKNsW+LIC5CAlmlWWhtt/LkGyLdrADj2OGwCYAny4aYgHy7VdleBzIVTG6EPoIf0TbKgrAD01m0YSVUg+XQtxGumzkCBEGPdxjSmMitNZsIx76YGgNNMGhCeCYBOnHdx81z0kI5Pt8DWh+ORKCSZCKc2Qhd08fI+yjixAolnHKWQjH06EQQZsICCk7pwaiMYyK8vE5Qn6zYGQQ8yR5gB8hEEYQGFIDXhmPb7EPnoLHFyvm6j6+eL5jnoA3icZINCsgD5cDyP5YNUhGN2mDGK58/4xVM8pllmwDsqljXnIAHx6OPCraQrqIBoAOCRaYJqqY3QA/Aa+RcNQGb02DQnGQcSHXEqIhoZ28hTYJ9uBaDLppuepEccA9URDUAjzwCgm0ZthCmKKRqAIp4/mRFQRiGxEcec2HyaSOH55wmALspz0/gxyYnfIpKIcMz0/59iL5jJEhaPROzCMf2aOYo7uck48wP7PEQSPo4BFk1ZMTjaRsQqHNNES3LBGZMtByDxeC1TLz2xmWrmyZyiGHMVTDSCZEu0sF0SIfaG8BM0mWG7PGIOYJqnJe5xCqeP6kbRqojW3zFNObE0Ion0qglobnCY5RKJWITDAYFKsgDQXLexNMXSBQkmTYtjAcp/HKS9Sjcu4fTBo00VeQUyvfKQuDsBCSiVqF9cwpmDfRsmHyxAy9yNJCuJLBwzJeNlLK1hmPhYgHLtxkkUHkc4uhNDGQwTN8cAXtdGGJqbwcRKpBHHDAr8L77mMEwirEDmW+DVuk5EHXF4tGGKwAGA5+boE8vkLQuHqRJnAKZxpA1FFU4ragMYJmWOQStcI930QwvHVC1PeDJFJPIivSgjTivCsQyTB16GFU8U4TQiHMsweSGUeKIIh9dlMGUhsHh4xGEY4qW5BMIXUYTDuWlM2Rj6DVUnviEhwxQI3ytcQwmH150zJeYUtL+3K2FHnMqvOWdKzWMvf4dNNYbR42qysXAYRs8xXEy2sMKZhzyOYYrEY6e1PKGEw48vZyqEdg0Pm2oM486ZLlAQRTiLCMcyTJHoqR9EEc48wrEMUyTOVF8ninAy20WRYTLAMuqwcBjGH135DQuHYfxxIC89iLo91BK8fDp31HeB5r71s/FlNm0pGa/WbdqrYCdiQUMU9+GwG3onwPP72/dP3gKD99m1JyzNfWBwH3h4aP/b6gao/y39NpWMzbOfos7jjCMenwvqu+7vi0D3LvDbA71oAGC6Src9ZUXsjhNVOPw8yBzQ2KORxg3jQzptqQAtIKKpZj4b5RwlMNeKTP8ecKBcyWfvtn5NYw8YXqTfrpLSAqL7OAA9LJeFkxGNPeDRHetnNh+NAwNxcgrEk6vWiqEMJiQtxaeZXRUzsFEkaiO0Qo845vJpA/4ehMokhCocDjunQiOUcGoj9AA8j60Ve0DnC+oEckRrekWv4QWwvHY+vr5Lx4q5i8Ye0LhNx8hlxEnniOpr7lP9oq7hBf3rh8Ye0L2zLUMwvnRvs/x9db5meW0V0/TKfu7k8yW+O/8MzD/5a79cv/jdAJWlluck5Ob+9hyKskRbp1d0nNM1F/2lsbf9/X77Skw0Ak+A1kbx+jT9e8DTe97fO/8A9N/RxRA09+n4syPv41c3QHeq74xqG569o7p0dI4ognV827muVxdAd+Z8Aeu7VIbqm+jaPPidTC+5rHXb/TgZ9bf07wG9L+3BBJnJJdB76ywgtf6TfwLDr4HTfft3v/rFWk7rEDCa7udPUBtZ3/s5b27XOUZe+fZxaiPUayOMEaNoBvf9iQagk2UoRuHgvj/RANRRfvqa5jvCYjSpDK+LfnYETB/YRwPB+Ftv0QDU5qf3aIJWoJpmXsh3fKNJ5bmJBqC5oPFf/Z+r6QO9aBafraIZ3Adef+tPNIvP1vfNfWD+vfd5E9fZKzwfkbov4ZibFowR49OFW4fA4xPrZ6sbuttNLsnJVVHnIpzuKk7HA8DLUxrig9I70V+02RXVp17o49vU+dTJ1O5deydbfN7+brUcwPo7g07Oio5rNPXtF3WrHOzQuXISv/pdHXK7eyf26+3WhsHv2//Xd4HhN/Z65P6i8viERtek8PRxJNHEGgToKCPF5BLovLGaJPVd+l73Dt0FVaEMP1KqzOSSRDW+tJpygD2dBiD7OEjkqbFnL2N2Re2V61PrOtihz2RTqad0nvMPZFqo9XW+IJNK9iEAOgff/Ur/7961iuHVhfV3La+3Po8qGj/tB+jO3foVvhDXYf7JOnekO3+rG6D/H/q+es1bh9aRUmcaqyH3xp7dXOx9aTdzY6LpJzgwQAKRM/VO1n9n/4HLa8D4g1465p+AP/3d/cQM3tNJle92naNgwlE7++qGOpNaryhT7iS9L63CUUeb3lt7ffNPVJZTG0WnUk0p4VR7tX/x2X/7Hx7aO7IOt7kj3Z2/8299mctr+wiriv7ZO/u5mX+i3zR9sBXZwQ7ddBMIzx+4mmq1EfpIaXJTvbh+8XM3ieooqqOj8YdzvepFOthxN3e6PnwdJ/xmQKt+4OB39/ar5qL6+1W85o7U488/+A+b6+p2qkvcaGWC+oR+cRxxzA0KniZTLYUrZYfp7Iicv/67cCFFYdY1NI5nlKTNxp7dTPAS4uTSmmwp1z+7so46z+9vR8CgAldHr7nGP9J1nOFH93KHF9YR2svPcRNNc9/um8j+ixdq+ycuYWqABCl32qQSdrXCMf2aRBM4jT/sQ/DxbXJIX56SvT786G8Op3fiHWINi06Ir78NVoZs6gwv7B3+4SG9Vjf0d/FyQ+3Mqxu7fwfoAyG677n93Snj2k95uo7rd54LsJ//h4fBwvHNhFaLOZlqBhJeoDa+JLvYibMjEtD8e+foSH2X/u4nxJoX+u/IVNFxsEM3k5++pt/lFg5WO4TTsgGd8L0I0rEBd7NLHTF0UcMkSahfzGzCMU20M/t342fwniJEbidTzGVMH1jvXvVdmg9xC1G6hXjTRO2I3SndNFY3zseI0ddweC6EKgi/nd2tzjRIYVbfgi5UHQNLnR61OxcmxfgSaPyDTI/uXbL3dRNkp/s0Adp5Q++7d+wmj9PKzdZhcPPKje98hmcFujuyiJp1jrYv3d3x0R0yhdRMBvVO7mQuqR3Vzx04zDyXE6qgdROlQTj/4Bxl1aHz++LAchrNzQgySdqcXlFotvd2K6LuXeuFPjuiizr/ZI+26EKUceB0h4wrmVL2Z4SAVN+ve9cuHLVzO404us/FOXRCHc2cJpP9oDt/XvW7HV/fyUUi61Q11fpZtEJFiKj1L7tp4WSzJ3UydR0vqRDn8ILMuB9n1s/VEbi+a//M6feHab96Uwrq88jo2hUkBK/W3fpzLpa2LzfCMX2b1J7rKUYVN6ZX/tfKJ9WZAYrwyfS+DG/OyBnETniZImpEzc2HW17bRwy3VJTWod2cijoPpjt/flJ5dHUf7CSbSuOTsTzi2PbHTZL+PXJ+x986T7A19+2hUGGzqkN45yi5O5FuUtOt3aI9uknd4TfkbxlN586jm+mXUY/zMnvU9h/f1gcdmvvUPrXuqMLRnj+XJNLW4fbGNL2yO/iPTygNx+l6N/boHPoVZwjmO8Bm3iaVSBpAP1jMZstzGOP/bodm3ZLgiZSLZnywzoifmtmzchmA9SKEZXxJTqncnuPbFDZe3dhHRVnsw4/bNssBgEd36LX4bM2xax3abxZqx1VD0V5mqvHHNt9P8OjOdn5p/klfL6BPCQqK7vyJJNLBfev5ax7Q3+Qcvt5bEprs7z42k0ZnynojecJalwcYA4t12xQOQFvepIXOTznYISG4LROQL+LwQn8xvMoIS3dKjqla9sGO+wShnFCq+93Ht73Xl9gCAyFC0Z03NErKZphX3U/exreuRQR9VDPQ6fzJo/n0inLbdBnSblE6r1ShkEyB7QRoqsKZXtECJ78x9tUN8MMb/XzIi/fB5ybCOrudNxS9C1LfUvru4D39Dr/zSrMrCpCoZqnNfPURoVpeUxKk0+SrjDjfcUYpl9dA8xf/5+9gx+oLji/pXASZl0lozmgMmFvgZrmVrbpsWnSKxWcawseX9tRzlfoumSLq0mvB9Io6l1P2sFjGK/BaPizy4lqH+lFkbrZdNtOc6hRtFnfOmdnW4Ud9kKC5TxsPyqgrJb0QS7bVIMXy2l+aU+/EunQ6qMDczt/ymq6RWD6uQz53OryWnkfkZN3GvIaf100AvyVSBRM73bvkGwgml/7XyzCRWazb9JycW+DtnQqFepeNMsfCBGaT+HwL0D9Vl8kfukgj79CZKpt0tFsAHNIImbwx+Iv1vQhlM6kwkZ+2vgOgnl1bGCcae5TUKkwxXfJrkGRHJjKG/KaGnyM8WYpJDK/95mZXFN5lUmETFBDEsXc0kwBueXyvLjiSljKG+gELJ6cML+zJmZNLmphUt9FiEmUFzRo1NtUYxp0f120ecRgmCAudaAAWDsO40XX6AwuHYfS8WLedHw59C8AkvbYwTCFYwGMbAR5xGMZOd93G0u0LtwDn4YhhKsgTNxNNcAvmijaGYXC+bvvbV5CFwzDEDAE2rLllZnwuEmsOw+SfGYCWl18jI4ID40SawzD5J7BogK1wEn2kB8PklFCiAczNOgBkumEHw2RAaNEA1nkcI5bmMEz+OV+30QwrGsAqnFQf78EwGfFk3XbOQfPLRjhmdO08aoEMk1MWAL7yO0/jRS4f88EwMfMCQHPdjm/OchMc2HwwgoGUHtHOMAkzAdCLUzACnXDqAObgCBtTXBYA+k6L0OLAJhwAqI3QA/A8qUoZJiFmAAZJCkagFQ4A1EYYA3iYdAMYJgbOARh+sprjwu0ZxB2wycbkkxUoTWwIYBhlPiYsjiMOsHku6OvUWsOUEfG8tSg34BUoi38MYJzmyOKEq3CAzSPcX6bSGqaMPFm3MTCDTk1g868XUwBLANMsRhQvPIUDsHiY0EzW7XI+RsbXngNmlOLHZJvClIwVXLZXKjq+N+tg8TAB6cmPxSgbgXa5McXzA7YOH8PoOE9jLiVLfPk4toNGaIBCgaceX2WqR2n9GplQ+6qt25iv22gCeBZze5hiMwPN/5WeUCOOpQAafQxwlkHVibSismhEFs6mIJos7YMFVEXO41gcViRiE86mQBJQF7w0oSo8W7ert44rduFsCqaZ4o75OkukEiZLFqA9lsdZNyQLEhOOrSIaiVrYpl34MekmoETThs/vM+nwArTepRL+jI7UhOPaiNEmfLnUrdbjZNPcMAGNMvOsG5I1uRCOH2ojTMHzRjJPQGZwGiPxOWiBGO8zblIk4XTBiaaCzSSjOR3QNV/HMdYxA00zGFU2yZwojHAAoDbCHPF2jqLync4pN0XUAfmRTQQboYU/OQateZlHbGOpKZpwWmBfJ1BKiymmhstX5iyS4BRKOADvhQDghDt69hTxGaBdVDc7+xmLJh8UbsQBKrt91cxMrGVyQBFHHJj7/77Kuh0pUurVlEWkkMIx6YJCplUgkW1cmfAUVjjm3EIX5fd3Sr+asogUVjgAYN6FWyiveCqXrl8UCi0coNTiYdHkmMILByileFg0OacUwgFKJR4WTQEojXCAjXgaoLyrIhLL8ymZ5CnkBKgfaiP0ATzNuh0+qfRqyiJSWuEAm6RQA/nOqD4HzdNw6n6BKLVwBObo00O+nvXDo0yBqYRwgM3mIQNkv/tO4s+nZJKnMsIRSCsm0x6BUns+JZM8lROOjLkcO8ntqxagPbYNzjUrF5UWjsA041rSK+ymIPIj94YslvLCwnGgNkITNCckr4Gpm5/Jglia73kJcoX4Py/4xvSgS/esAAAAAElFTkSuQmCC" alt="Salesforce">
+  <div class="hero-grid">
+   <div>
+    <h1><span>Pilar Service:</span> <span>SKUs y armador de BOM</span></h1>
+    <p class="lede">Catálogo extraído de org62 (Product2, línea de negocio Service y ediciones cross-cloud de Service) con notas de empaquetado tomadas de Slack. Datos al 25 de octubre de 2026; valida siempre en el price book antes de cotizar.</p>
+    <div class="ledger" aria-label="Estado de los SKUs del catálogo">
+     <div class="ledger-bar" id="ledgerBar"></div>
+     <div class="ledger-keys" id="ledgerKeys"></div>
+    </div>
+   </div>
+   <figure class="famchart" id="famFig">
+    <figcaption><b>SKUs por familia y estado</b><span id="famTotal"></span></figcaption>
+    <div id="famChart"></div>
+    <p class="fam-detail" id="famDetail">Toca una familia o un estado para filtrar el catálogo.</p>
+   </figure>
+  </div>
+ </div>
+</header>
+
+<div id="tabSentinel" aria-hidden="true"></div>
+<div class="tabbar" id="tabbar">
+ <div class="tabbar-in">
+  <nav class="tabs" role="tablist" aria-label="Secciones">
+   <span class="thumb" aria-hidden="true"></span>
+   <button role="tab" aria-selected="true" aria-controls="t-cat" id="b-cat">Catálogo</button>
+   <button role="tab" aria-selected="false" aria-controls="t-bom" id="b-bom" tabindex="-1">Armar BOM</button>
+   <button role="tab" aria-selected="false" aria-controls="t-ed" id="b-ed" tabindex="-1">Comparar ediciones</button>
+   <button role="tab" aria-selected="false" aria-controls="t-cav" id="b-cav" tabindex="-1">Salvedades y fuentes</button>
+  </nav>
+  <span class="mini" aria-hidden="true"><img src="data:image/png;base64,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" alt="">Pilar Service</span>
+ </div>
+</div>
+<div class="wrap">
+
+<!-- CATALOGO -->
+<section id="t-cat" role="tabpanel" aria-labelledby="b-cat">
+  <div class="panel">
+    <div class="filters">
+      <label class="f">Buscar por nombre o número de SKU
+        <input type="search" id="q" placeholder="Ej.: Partner Contact Center, 200004517">
+      </label>
+      <label class="f">Familia
+        <select id="ff"></select>
+      </label>
+      <label class="f">Estado
+        <select id="fs">
+          <option value="">Todos</option>
+          <option value="v">Vigente</option>
+          <option value="bi">Solo base instalada</option>
+          <option value="pi">Piloto</option>
+          <option value="nv">No vigente</option>
+        </select>
+      </label>
+      <label class="check"><input type="checkbox" id="fr"> Ocultar variantes reguladas</label>
+    </div>
+    <p class="note" style="margin:10px 0 0">Variantes reguladas: GCPD, Gov Cloud, GovCloudPlus, Hyperforce OZ, Air Gap y Controlled Setting. "Solo base instalada" agrupa SKUs activos con restricción de phase-out o fecha de fin de venta vencida.</p>
+  </div>
+  <p class="count" id="count"></p>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>SKU</th><th>Producto</th><th>Familia</th><th>Métrica</th><th>Estado</th><th>Detalle</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- CALCULADORA -->
+<section id="t-bom" role="tabpanel" aria-labelledby="b-bom" hidden>
+  <div class="calc">
+    <form class="panel" id="cform" onsubmit="return false">
+      <fieldset>
+        <legend>Contexto</legend>
+        <label class="f">Región del contact center
+          <select id="c-region">
+            <option value="us">EE. UU. y Canadá</option>
+            <option value="eu">Reino Unido y UE (30+ países)</option>
+            <option value="latam" selected>LATAM</option>
+            <option value="anz">Australia y Nueva Zelanda</option>
+            <option value="other">APAC u otra</option>
+          </select>
+        </label>
+        <div style="margin-top:10px" class="seg" role="radiogroup" aria-label="Portafolio">
+          <label><input type="radio" name="port" value="p2" checked><span>Portfolio 2.0 (nuevo)</span></label>
+          <label><input type="radio" name="port" value="p1"><span>1.0 (renovación/expansión)</span></label>
+        </div>
+        <div class="sub" id="ed2box">
+          <div class="seg" role="radiogroup" aria-label="Edición 2.0" style="margin-bottom:8px">
+            <label><input type="radio" name="ed2" value="Core"><span>Core</span></label>
+            <label><input type="radio" name="ed2" value="Advanced" checked><span>Advanced</span></label>
+            <label><input type="radio" name="ed2" value="Max"><span>Max</span></label>
+          </div>
+          <div class="seg" role="radiogroup" aria-label="Nube">
+            <label><input type="radio" name="cloud" value="svc" checked><span>Service</span></label>
+            <label><input type="radio" name="cloud" value="ss"><span>Sales &amp; Service</span></label>
+          </div>
+        </div>
+        <div class="sub" id="ed1box" hidden>
+          <div class="seg" role="radiogroup" aria-label="Edición 1.0">
+            <label><input type="radio" name="ed1" value="EE"><span>Enterprise</span></label>
+            <label><input type="radio" name="ed1" value="UE" checked><span>Unlimited</span></label>
+            <label><input type="radio" name="ed1" value="PE"><span>Performance</span></label>
+            <label><input type="radio" name="ed1" value="A1"><span>Agentforce 1</span></label>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Usuarios</legend>
+        <div class="grid2">
+          <label class="f">Reps de servicio<input type="number" id="c-reps" min="0" value="100"></label>
+          <label class="f">Supervisores<input type="number" id="c-sup" min="0" value="10"></label>
+        </div>
+        <label class="f" style="margin-top:10px">Plazo del contrato (meses)<input type="number" id="c-term" min="1" value="36"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Voz</legend>
+        <select id="c-voice" aria-label="Opción de voz">
+          <option value="none">Sin voz</option>
+          <option value="native">Nativa: Agentforce Contact Center Voice</option>
+          <option value="byot" selected>Partner Contact Center con telefonía de partner (BYOT)</option>
+          <option value="amz">Partner Contact Center con Amazon Connect (Salesforce factura)</option>
+          <option value="byoa">Partner Contact Center con Amazon Connect propio (BYOA)</option>
+        </select>
+        <div class="sub" id="vNative" hidden>
+          <div class="grid2">
+            <label class="f">Números long code<input type="number" id="c-lc" min="0" value="5"></label>
+            <label class="f">Números toll-free<input type="number" id="c-tf" min="0" value="2"></label>
+            <label class="f">Paquetes 100k crédito entrante<input type="number" id="c-vin" min="0" value="1"></label>
+            <label class="f">Paquetes 100k crédito saliente<input type="number" id="c-vout" min="0" value="0"></label>
+          </div>
+          <p class="note">Números y créditos solo aplican a EE. UU. y Canadá.</p>
+        </div>
+        <div class="sub" id="vAmz" hidden>
+          <label class="f">Minutos de plataforma por usuario
+            <select id="c-mins"><option>750</option><option selected>2000</option><option>5000</option></select>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Canales digitales</legend>
+        <label class="check"><input type="checkbox" id="c-dig" checked> Mensajería (web, in-app, WhatsApp, SMS)</label>
+        <div class="sub" id="digBox">
+          <div class="grid2">
+            <label class="f">Paquetes WhatsApp (1.000)<input type="number" id="c-wa" min="0" value="10"></label>
+            <label class="f">Paquetes SMS (1.000)<input type="number" id="c-sms" min="0" value="0"></label>
+            <label class="f">Long codes SMS<input type="number" id="c-smslc" min="0" value="0"></label>
+            <label class="f">Short codes SMS<input type="number" id="c-smssc" min="0" value="0"></label>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Workforce Engagement</legend>
+        <label class="check"><input type="checkbox" id="c-wfm" checked> Workforce Management</label>
+        <label class="check"><input type="checkbox" id="c-qm" checked> Quality Management</label>
+        <label class="check" id="plusWrap"><input type="checkbox" id="c-plus"> Usar bundle Agentforce Contact Center Plus</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>IA e inteligencia</legend>
+        <label class="check" id="afsWrap"><input type="checkbox" id="c-afs"> Agentforce for Service Add-on</label>
+        <label class="f" style="margin-top:8px">Paquetes Help Agent Resolutions<input type="number" id="c-har" min="0" value="0"></label>
+        <label class="f" style="margin-top:8px">Service Intelligence
+          <select id="c-si"><option value="none">No</option><option value="si">Service Intelligence</option><option value="sit">Service Intelligence + Tableau</option></select>
+        </label>
+        <label class="f" style="margin-top:8px">Usuarios de Service Intelligence<input type="number" id="c-siq" min="0" value="10"></label>
+        <label class="f" style="margin-top:8px">Paquetes adicionales de señales CXI (100)<input type="number" id="c-cxi" min="0" value="0"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>IT Service (ITSM)</legend>
+        <div class="grid2">
+          <label class="f">Resolutores (fulfillers)<input type="number" id="c-ful" min="0" value="0"></label>
+          <label class="f">Empleados solicitantes<input type="number" id="c-emp" min="0" value="0"></label>
+          <label class="f">CMDB, paquetes de 100 CIs<input type="number" id="c-cmdb" min="0" value="0"></label>
+          <label class="f">Activos HW, paquetes de 100<input type="number" id="c-ham" min="0" value="0"></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Otros</legend>
+        <label class="f">Usuarios solo Knowledge<input type="number" id="c-kn" min="0" value="0"></label>
+      </fieldset>
+    <div class="jump" id="jump"><span id="jumpTxt"></span><a href="#bomTop">Ver BOM</a></div>
+    </form>
+
+    <div id="bomTop">
+      <div class="panel bomhead" id="bomHead">
+        <div class="bom-head">
+          <h2>BOM propuesto</h2>
+          <div class="totals">
+            <div>Total contrato<b id="tot">—</b></div>
+            <div>Anualizado<b id="totA">—</b></div>
+          </div>
+        </div>
+        <div class="compo">
+          <p class="compo-cap" id="compoCap"></p>
+          <div class="compo-bar" id="compoBar" aria-hidden="true"></div>
+          <div class="compo-keys" id="compoKeys"></div>
+        </div>
+        <div class="actions">
+          <button class="btn" type="button" id="dl"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8m-3.5-3.5L8 10l3.5-3.5M3 13.5h10"/></svg>Descargar CSV</button>
+          <button class="btn ghost" type="button" id="cp"><svg class="ic-def" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M10.5 5V3.5a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 3.5V9A1.5 1.5 0 0 0 4 10.5h1"/></svg><svg class="ic-ok" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 8.5 3.2 3L13 4.5"/></svg>Copiar BOM</button>
+        </div>
+        <p class="note" id="cpmsg" style="margin:8px 0 0" aria-live="polite">Los precios son opcionales: ingrésalos desde el price book. Los marcados como "ref. Slack" son valores de referencia publicados en canales internos.</p>
+      </div>
+      <div id="alerts"></div>
+      <div id="bom"></div>
+    </div>
+  </div>
+</section>
+
+<!-- EDICIONES -->
+<section id="t-ed" role="tabpanel" aria-labelledby="b-ed" hidden>
+  <nav class="subnav" aria-label="Secciones de comparación">
+    <a href="#ed-map">Equivalencias</a><a href="#ed-mx">Matriz de ediciones</a><a href="#ed-a4x">Agentforce (A4X)</a><a href="#ed-ex">Qué hace cada licencia</a><a href="#ed-pick">Cómo elegir</a><a href="#ed-glo">Glosario</a>
+  </nav>
+
+  <div class="panel" id="ed-map">
+    <h2 class="h2">De 1.0 a Portfolio 2.0</h2>
+    <p class="lead">Desde el 2 de septiembre de 2026 las ediciones nuevas se venden como Core, Advanced y Max. Las ediciones 1.0 siguen vigentes como nombres de contrato para renovar y expandir, así que confirma en qué portafolio está el cliente antes de cotizar.</p>
+    <div class="mapgrid">
+      <div class="mapcard"><span class="old">Enterprise (EE)</span><span class="arrow" aria-hidden="true">→</span><span class="new">Service Core</span><p>Entrada. Casos, consola y automatización; IA y canales se agregan como add-ons.</p></div>
+      <div class="mapcard"><span class="old">Unlimited (UE)</span><span class="arrow" aria-hidden="true">→</span><span class="new">Service Advanced</span><p>Más límites, sandbox completo y acceso a Help Agent por resolución.</p></div>
+      <div class="mapcard"><span class="old">Agentforce 1 (A1E)</span><span class="arrow" aria-hidden="true">→</span><span class="new">Service Max</span><p>Todo incluido: Agentforce for Service, canales digitales, Partner Contact Center, WFM y QM.</p></div>
+      <div class="mapcard muted"><span class="old">Performance (PxE) y Einstein 1</span><span class="arrow" aria-hidden="true">→</span><span class="new">Sin equivalente directo</span><p>Solo renovación. En org62, Performance se describe como funcionalidad Performance sin Data.com; Einstein 1 está en phase-out.</p></div>
+      <div class="mapcard muted"><span class="old">Professional (PE)</span><span class="arrow" aria-hidden="true">→</span><span class="new">Fin de venta</span><p>Fin de venta el 3 de febrero de 2025. Solo add-on, renovación o reducción.</p></div>
+    </div>
+  </div>
+
+  <div class="panel" id="ed-mx">
+    <h2 class="h2">Matriz de ediciones de Service</h2>
+    <div class="legend">
+      <span><i class="cell y">●</i> Incluido</span><span><i class="cell a">+</i> Add-on pagado</span><span><i class="cell n">–</i> No aplica</span><span><i class="cell v">?</i> Verificar en cheat sheet</span>
+    </div>
+    <div class="colpick" role="group" aria-label="Columnas a comparar"></div>
+    <div class="mxbox"><table class="mx" id="mx"></table></div>
+    <p class="note">Las celdas con "?" son inferencias razonables (por ejemplo, Advanced hereda de UE) que no encontré confirmadas en Slack ni org62. Valida con el <a href="https://docs.google.com/presentation/d/1ZJdkM6rApIwrrfKzYw3Xp909d2bkuXePGI3sY_EvmPU/edit" target="_blank" rel="noopener">Service Edition Cheat Sheet</a> o el <a href="https://salesforce.enterprise.slack.com/docs/E7T5PNK3P/F0ATZ4E2SCQ" target="_blank" rel="noopener">Service Specialist Pricing &amp; SKU Guide</a>.</p>
+  </div>
+
+  <div class="panel" id="ed-a4x">
+    <h2 class="h2">Agentforce for X (A4X)</h2>
+    <p class="lead">A4X es la familia de add-ons por usuario que agrega Agentforce a una nube: Agentforce for Service (A4S), for Sales, for IT Teams, for Field Service y versiones de industria como Public Sector o Automotive. No es una edición: se monta sobre EE, UE, PxE, Core o Advanced.</p>
+    <div class="a4x">
+      <div><h3>Qué incluye</h3><ul>
+        <li>Uso sin medición de agentes para empleados: el rep usa Agentforce dentro de la consola sin consumir Flex Credits.</li>
+        <li>Acceso a Agentforce Studio (Builder, Script, Testing y Observability).</li>
+        <li>Desde el 1 de noviembre de 2026, el Headless Add-on: interacciones de agentes externos sobre APIs y MCP de Salesforce, en una bolsa compartida por la org que se reinicia cada mes.</li>
+      </ul></div>
+      <div><h3>Qué no incluye</h3><ul>
+        <li>Agentes de cara al cliente y agentes autónomos o en segundo plano: se cobran por consumo (10 Flex Credits por interacción) o por resolución, como Help Agent.</li>
+        <li>Canales, voz, WFM o QM: siguen siendo SKUs aparte salvo en Max.</li>
+      </ul></div>
+      <div><h3>Precio y timing</h3><ul>
+        <li>Referencia: sube de USD 125 a USD 150 PUPM el 1 de noviembre de 2026. Clientes de Sales o Service sin A4X, A1E ni Max que cierren antes de esa fecha fijan USD 125.</li>
+        <li>Se informó que contratos con inicio posterior pueden mantener el precio actual con aprobación previa; confírmalo con Deal Desk.</li>
+      </ul></div>
+      <div><h3>Cuándo usar otra cosa</h3><ul>
+        <li>Service Max ya trae A4S: no cotices A4X encima.</li>
+        <li>Agentforce Coworker es una licencia standalone sin medición (referencia USD 50 por usuario al mes) para cuando A4S o Max son caros o no calzan; requiere EE+ con Foundations, A4S o Max.</li>
+        <li>Si el uso es bajo o esporádico, compara contra Flex Credits por consumo. El punto de equilibrio depende de cuántas acciones diarias ejecuta cada usuario.</li>
+      </ul></div>
+    </div>
+    <p class="src">Fuentes: <a href="https://salesforce.enterprise.slack.com/archives/C0ACAQ1A3D5/p1792414242890329" target="_blank" rel="noopener">actualización semanal de Service (19 oct)</a>, <a href="https://salesforce.enterprise.slack.com/archives/C09BTRRHG9H/p1788439243487489" target="_blank" rel="noopener">resumen de Headless 360</a>, <a href="https://salesforce.enterprise.slack.com/archives/C08FZGLTCMA/p1791484986975289" target="_blank" rel="noopener">opciones de bajo costo</a>, <a href="https://salesforce.enterprise.slack.com/archives/C0959N0GT9B/p1790735087040699" target="_blank" rel="noopener">cambio de precio A4X</a>.</p>
+  </div>
+
+  <div class="panel" id="ed-ex">
+    <h2 class="h2">Qué hace cada licencia, con un ejemplo</h2>
+    <p class="lead">Ejemplos ilustrativos para explicar la licencia a un cliente. La columna de SKU usa la variante 2.0 o la más común.</p>
+    <label class="f" style="max-width:340px;margin-bottom:12px">Filtrar por tema
+      <select id="exf"><option value="">Todos</option><option>Edición</option><option>Contact center</option><option>IA</option><option>Operación</option><option>IT Service</option><option>Uso especial</option></select>
+    </label>
+    <div class="exgrid" id="exgrid"></div>
+  </div>
+
+  <div class="panel" id="ed-pick">
+    <h2 class="h2">Cómo elegir</h2>
+    <div class="pick" id="pick"></div>
+  </div>
+
+  <div class="panel" id="ed-glo">
+    <h2 class="h2">Glosario</h2>
+    <dl class="glo" id="glo"></dl>
+  </div>
+</section>
+
+<!-- SALVEDADES -->
+<section id="t-cav" role="tabpanel" aria-labelledby="b-cav" hidden>
+  <div class="panel caveats">
+    <h3 style="margin-top:0">Ediciones Portfolio 2.0</h3>
+    <ul>
+      <li>Equivalencias usadas en el canal del Quoting Guide: Service Core reemplaza a Enterprise, Service Advanced a Unlimited y Service Max a Agentforce 1 Edition. Los SKUs 2.0 se activaron en org62 el 2 de septiembre de 2026.</li>
+      <li>Service Max incluye Agentforce Contact Center Digital, Workforce Management y Quality Management. En Core y Advanced, AFCC Digital es un add-on pagado.</li>
+      <li>Service Max incluye Partner Contact Center (ex Service Cloud Voice). La voz nativa de AFCC no está incluida en ninguna edición por razones de clasificación tributaria; la referencia publicada es USD 75 PUPM sobre Max y USD 125 PUPM sobre Core o Advanced.</li>
+      <li>Desde IT Service, Max incluye 10 licencias de IT Service Desk (UE) para resolutores y el AI Agents for Employees Add-on, que habilita a Paige. Se informó que Max trae 2,75M de Flex Credits.</li>
+      <li>Restricted Use (RUL) se permite en Core y Advanced, no en Max. Service Advanced y Service Max pueden convivir en la misma org.</li>
+      <li>Al pasar de Advanced a productos ya incluidos (por ejemplo, Tableau Plus en nubes de industria) pueden aparecer reglas de producto que bloquean la cotización; hay que retirar o intercambiar las líneas duplicadas.</li>
+    </ul>
+    <p class="src">Fuentes: <a href="https://salesforce.enterprise.slack.com/archives/C0C1SNDJJ8G/p1790260095628029" target="_blank" rel="noopener">hilo de Tyler Wolfe sobre lo incluido en Max</a>, <a href="https://salesforce.enterprise.slack.com/archives/C08F0VBM6TY/p1790203868874319" target="_blank" rel="noopener">post de Emily Todd (Service Max)</a>, <a href="https://salesforce.enterprise.slack.com/archives/C095UF0KV71/p1788447693822199" target="_blank" rel="noopener">FAQ de la Community Call LATAM</a>, <a href="https://salesforce.enterprise.slack.com/archives/C0ADH2YFA06/p1792012431445909" target="_blank" rel="noopener">canal del AFCC Quoting Guide</a>, <a href="https://salesforce.enterprise.slack.com/archives/C05QMEJ9S9M/p1788540435799329" target="_blank" rel="noopener">#help-sell-core-advanced-max</a>.</p>
+
+    <h3>Agentforce Contact Center (voz nativa y digital)</h3>
+    <ul>
+      <li>Disponibilidad de voz nativa: EE. UU. y Canadá desde marzo de 2026; Reino Unido y UE (30+ países) desde el 16 de octubre de 2026; Australia y Nueva Zelanda en noviembre de 2026; LATAM y APAC en FY28. Para LATAM hoy la opción de voz es Partner Contact Center.</li>
+      <li>Fuera de EE. UU. y Canadá aplica Bring Your Own Carrier: el cliente contrata minutos y números con su carrier o con un carrier certificado. Los SKUs de Number Lease y Voice Credits son US/CAN.</li>
+      <li>Digital Engagement es fin de venta (2 de marzo de 2026 en org62) y no puede coexistir con AFCC Digital en la misma org productiva; planifica el swap.</li>
+      <li>Si el cliente usa SMS o WhatsApp, hay que sumar créditos de mensajes y SKUs de gestión de números SMS; el rate group depende de la geografía, usa la calculadora de AFCC Digital y Number Management. Un post de producto indica que AFCC, AFCC Plus y AFCC Digital ya traen Messaging Credits con Data Cloud, así que confirma qué se cobra aparte antes de cerrar.</li>
+      <li>Desde la semana del 26 de octubre, los nuevos canales de WhatsApp en AFCC se crean como Unified WhatsApp.</li>
+      <li>AFCC Plus empaqueta AFCC con WFM, QM y asistencia de IA de Agentforce for Service.</li>
+    </ul>
+    <p class="src">Fuentes: <a href="https://salesforce.enterprise.slack.com/archives/C01GK77SUP8/p1792605652019559" target="_blank" rel="noopener">GA en UK y UE (Ashish Seth)</a>, <a href="https://salesforce.enterprise.slack.com/archives/C0A0SDW1NQ5/p1790203735951269" target="_blank" rel="noopener">AFCC Digital y swap desde DE</a>, <a href="https://salesforce.enterprise.slack.com/archives/C0A0SDW1NQ5/p1792359161014039" target="_blank" rel="noopener">Unified WhatsApp</a>, <a href="https://salesforce.enterprise.slack.com/archives/C01GK77SUP8/p1781637789078379" target="_blank" rel="noopener">GA de WEM</a>.</p>
+
+    <h3>Partner Contact Center (ex Service Cloud Voice)</h3>
+    <ul>
+      <li>BYOT conecta la telefonía existente del cliente; el contrato de telefonía con el partner es aparte. Revisa disponibilidad del partner en AppExchange.</li>
+      <li>Con Amazon Connect gestionado por Salesforce, el SKU incluye setup, facturación y soporte de telefonía, transcripción y 750, 2.000 o 5.000 minutos de plataforma y utterances de Lex por usuario. Cargos de telefonía, impuestos, tasas gubernamentales y overages se facturan con SKUs de pass-through (billing only).</li>
+      <li>BYOA requiere que el cliente cumpla criterios y tenga su propia instancia de Amazon Connect. La variante PxE está en phase-out.</li>
+      <li>Contact Lens y Amazon Enterprise Support ya están fuera de venta para clientes nuevos.</li>
+    </ul>
+
+    <h3>Workforce Engagement (WFM y QM)</h3>
+    <ul>
+      <li>WFM es GA desde el 16 de junio de 2026; QM standalone es cotizable en org62 desde el 20 de octubre de 2026, con referencia de USD 50 por usuario al mes.</li>
+      <li>QM evalúa transcripciones de cualquier solución de Service, nativa o de partner, sin requerir Data Cloud.</li>
+      <li>Ambos vienen en Service Max y en AFCC Plus; no los cotices dos veces.</li>
+      <li>QM solo tiene SKU Enterprise y Unlimited en org62. Para Performance, confirma en el canal.</li>
+    </ul>
+    <p class="src">Fuentes: <a href="https://salesforce.enterprise.slack.com/archives/C0A0SDW1NQ5/p1792599016713499" target="_blank" rel="noopener">QM como add-on</a>, <a href="https://salesforce.enterprise.slack.com/archives/C01KR0MR6F3/p1792520908567329" target="_blank" rel="noopener">#help-sell-workforce-engagement</a>.</p>
+
+    <h3>Service Intelligence y CXI</h3>
+    <ul>
+      <li>Service Intelligence entrega insights y IA para operaciones de servicio; la variante + Tableau suma exploración en Tableau.</li>
+      <li>En Portfolio 2.0, CSI se mide con Flex Credits y las señales de experiencia quedan sin medición; usa la calculadora de Flex Credits de CSI para dimensionar.</li>
+      <li>Los SKUs LP1 de Service Intelligence y CXI están en phase-out.</li>
+    </ul>
+
+    <h3>IT Service (ITSM)</h3>
+    <ul>
+      <li>IT Service Desk se licencia por resolutor e incluye la licencia CRM para la consola de IT Service; AI Agents for Employees se dimensiona por empleado solicitante.</li>
+      <li>IT Service ya está soportado en la misma org que Service Cloud, Field Service, Sales Cloud y Sales &amp; Service. El caso de uso de RR. HH. debe ir siempre en su propia org.</li>
+      <li>Paige (agente de IT) se cobra por resolución; los precios se publican el 26 de octubre de 2026.</li>
+      <li>Promoción vigente: al comprar IT Service Desk se incluyen 1.000 activos de HAM en EE o 2.000 en UE/PXE.</li>
+    </ul>
+    <p class="src">Fuentes: <a href="https://salesforce.enterprise.slack.com/archives/C05FQJ1BFL2/p1792765840306809" target="_blank" rel="noopener">#latam-sales (Grady Young)</a>, <a href="https://salesforce.enterprise.slack.com/archives/C0329TCQ0JH/p1784829600906379" target="_blank" rel="noopener">promoción HAM</a>, <a href="https://salesforce.enterprise.slack.com/archives/G01JJDMDNGK/p1792157688579269" target="_blank" rel="noopener">POP Pulse de octubre</a>.</p>
+
+    <h3>Cómo leer el estado</h3>
+    <ul>
+      <li>Vigente: activo en org62, sin restricción de phase-out ni fecha de fin de venta vencida.</li>
+      <li>Solo base instalada: activo pero con "Allow Add/Renew/Reduction Only" u otra restricción, reemplazado por otro SKU, o con fin de venta vencido. Sirve para renovaciones y expansiones, no para logos nuevos.</li>
+      <li>Piloto: SKU de provisión de piloto, no GA.</li>
+      <li>No vigente: inactivo en org62.</li>
+      <li>"Billing only" marca SKUs que no provisionan nada y solo facturan consumo o pass-through.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  Alcance: SKUs de Product2 en org62 con línea de negocio Service (familias Service Cloud, Add-ons, Contact Center, Service Cloud Voice, Digital Engagement, Workforce Engagement, Customer Experience Intelligence, Service Cloud Einstein, Agentforce for Service, Agentforce IT Service) más las ediciones cross-cloud Core, Advanced, Max, Agentforce 1, Einstein 1 y Service Intelligence. Quedan fuera las variantes OEM, VAR e ISVForce, los SKUs de asignación ALAOV, las ediciones de nubes de industria, Field Service, Experience Cloud y Employee/HR Service. Las salvedades provienen de hilos internos de Slack y algunas respuestas fueron de bots; confírmalas en #help-sell-agentforce-contact-center, #help-sell-core-advanced-max o con Deal Desk.
+</footer>
+</div>
+
+<script>
+const DATA = [{"id":"01ted000008PeC9AAK","n":"Service Cloud - Core Edition","s":"200004515","f":"ED2","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000008PeP3AAK","n":"Service Cloud - Core Edition (Restricted Use)","s":"200004523","f":"ED2","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000008PeDlAAK","n":"Service Cloud - Advanced Edition","s":"200004516","f":"ED2","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000008PeQfAAK","n":"Service Cloud - Advanced Edition (Restricted Use)","s":"200004524","f":"ED2","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000008PeAXAA0","n":"Service Cloud - Max Edition","s":"200004517","f":"ED2","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000008PbSoAAK","n":"Sales & Service Cloud - Core Edition","s":"200004518","f":"ED2","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000008PeSHAA0","n":"Sales & Service Cloud - Core Edition (Restricted Use)","s":"200004525","f":"ED2","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000008PeFNAA0","n":"Sales & Service Cloud - Advanced Edition","s":"200004519","f":"ED2","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000008PeTtAAK","n":"Sales & Service Cloud - Advanced Edition (Restricted Use)","s":"200004526","f":"ED2","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000008PeGzAAK","n":"Sales & Service Cloud - Max Edition","s":"200004520","f":"ED2","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000008PeIbAAK","n":"Agentforce for Sales & Service - Core Edition","s":"200004527","f":"ED2","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000008PeKDAA0","n":"Agentforce for Sales & Service - Advanced Edition","s":"200004528","f":"ED2","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000003U3mjAAC","n":"Service Cloud - Agentforce 1 Edition","s":"200007761","f":"A1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000003U3pxAAC","n":"Service Cloud Performance - Agentforce 1 Edition","s":"200007763","f":"A1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000008i8i1AAA","n":"Service Cloud - Agentforce 1 Edition - GovCloudPlus","s":"200009349","f":"A1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000003U3htAAC","n":"Service Provisioning for Agentforce 1 Edition","s":"200007759","f":"A1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000007IzLxAAK","n":"Service Provisioning for Agentforce 1 Edition - GCPD","s":"200005503","f":"A1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007F9uBAAS","n":"Service Cloud - Einstein 1 Edition","s":"200004741","f":"A1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t3y000006X4cqAAC","n":"Service Cloud - Einstein 1 Edition - LP","s":"200003177","f":"A1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01ted000008i8rhAAA","n":"Service Cloud - Agentforce 1 Edition - GovCloudPlus","s":"200009356","f":"A1","a":0,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000005JiykAAC","n":"Group Edition - Service & Support","s":"200010006","f":"ED1","a":1,"ph":"R","eos":"","m":"","fl":""},{"id":"01t30000005JjDGAA0","n":"Sales & Service Cloud - Enterprise Edition (Corporate) (Service)","s":"200002845","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005JizDAAS","n":"Sales & Service Cloud - Enterprise Edition (Emerging Market) (Service)","s":"200001198","f":"ED1","a":1,"ph":"AARR","eos":"2021-04-20","m":"U","fl":""},{"id":"01t30000005Jiz4AAC","n":"Sales & Service Cloud - Enterprise Edition (LP-Service)","s":"200001317","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005Jj93AAC","n":"Sales & Service Cloud - Enterprise Edition (Portuguese) (Service)","s":"200000176","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005Jj94AAC","n":"Sales & Service Cloud - Enterprise Edition (Restricted Use) (Service)","s":"200000177","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005JiwrAAC","n":"Sales & Service Cloud - Enterprise Edition (Service)","s":"200000013","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000000b6kzAAA","n":"Sales & Service Cloud - Enterprise Edition (Service)","s":"100000084","f":"ED1","a":1,"ph":"REPL:200000013","eos":"","m":"U","fl":""},{"id":"01t30000005Jj96AAC","n":"Sales & Service Cloud - Enterprise Edition (Spanish) (Service)","s":"200000179","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005Jj8OAAS","n":"Sales & Service Cloud - Flex User - Enterprise Edition (Service)","s":"200002650","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005JiybAAC","n":"Sales & Service Cloud - Flex User - Unlimited Edition (Service)","s":"210002651","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005JiwsAAC","n":"Sales & Service Cloud - Knowledge Pack - Enterprise Edition (Service)","s":"200000014","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005JixjAAC","n":"Sales & Service Cloud - Knowledge Pack - Unlimited Edition (Service)","s":"200000043","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005Jj8PAAS","n":"Sales & Service Cloud - Off-Peak Shift User - Enterprise Edition (Service)","s":"200002653","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005JiycAAC","n":"Sales & Service Cloud - Off-Peak Shift User - Unlimited Edition (Service)","s":"210002654","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005JizEAAS","n":"Sales & Service Cloud - Professional Edition (Emerging Market) (Service)","s":"200001199","f":"ED1","a":1,"ph":"AARR","eos":"2021-04-20","m":"U","fl":""},{"id":"01t30000005Jj99AAC","n":"Sales & Service Cloud - Professional Edition (Portuguese) (Service)","s":"200000182","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005JiyYAAS","n":"Sales & Service Cloud - Professional Edition (Service)","s":"200000035","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005Jj9BAAS","n":"Sales & Service Cloud - Professional Edition (Spanish) (Service)","s":"200000184","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005JizFAAS","n":"Sales & Service Cloud - Unlimited Edition (Emerging Market) (Service)","s":"210001205","f":"ED1","a":1,"ph":"AARR","eos":"2021-04-20","m":"U","fl":""},{"id":"01t30000005JjDJAA0","n":"Sales & Service Cloud - Unlimited Edition (Portuguese) (LP-Service)","s":"200000452","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005Jj3MAAS","n":"Sales & Service Cloud - Unlimited Edition (Restricted Use) (Service)","s":"200000453","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005JjCiAAK","n":"Sales & Service Cloud - Unlimited Edition (Service)","s":"200000436","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005JiyiAAC","n":"Sales & Service Cloud - Unlimited Edition (Spanish) (Service)","s":"200000455","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005Jj98AAC","n":"Salesforce.org Sales & Service - Enterprise Edition (Service)","s":"200000181","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005JizAAAS","n":"Salesforce.org Service Cloud Ltng CRM - Ent. Ed. (Emerging Market)","s":"200001416","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000006epjMAAQ","n":"Service Cloud - EE - Controlled Setting","s":"200013199","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000006epjjAAA","n":"Service Cloud - EE (Restricted Use) - Controlled Setting","s":"200013200","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000006QtHxAAK","n":"Service Cloud - Enterprise Edition","s":"200012637","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007J5BTAA0","n":"Service Cloud - Enterprise Edition - GCPD","s":"200008582","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007MJikAAG","n":"Service Cloud - Enterprise Edition - HF OZ","s":"200013810","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000006QtHzAAK","n":"Service Cloud - Enterprise Edition - Nonprofit","s":"200012639","f":"ED1","a":1,"ph":"AARR","eos":"2020-08-18","m":"U","fl":""},{"id":"01t0M000006z1mVQAQ","n":"Service Cloud - Enterprise Edition (Emerging Market)","s":"200013127","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000006QtI1AAK","n":"Service Cloud - Enterprise Edition (Restricted Use)","s":"200012641","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007J5BUAA0","n":"Service Cloud - Enterprise Edition (Restricted Use) - GCPD","s":"200008583","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007MJicAAG","n":"Service Cloud - Enterprise Edition (Restricted Use) - HF OZ","s":"200013811","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000006QtI8AAK","n":"Service Cloud - Flex User - Enterprise Edition","s":"200012648","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000006QtIBAA0","n":"Service Cloud - Flex User - Unlimited Edition","s":"200012652","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000006QtIAAA0","n":"Service Cloud - Off-Peak Shift User - Enterprise Edition","s":"200012650","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007J5BXAA0","n":"Service Cloud - Off-Peak Shift User - Enterprise Edition - GCPD","s":"200008586","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000006QtIDAA0","n":"Service Cloud - Off-Peak Shift User - Unlimited Edition","s":"200012654","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007J5BYAA0","n":"Service Cloud - Off-Peak Shift User - Unlimited Edition - GCPD","s":"200008587","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000005Jj7lAAC","n":"Service Cloud - Performance Edition - (Flex User)","s":"210002652","f":"ED1","a":1,"ph":"AR","eos":"","m":"U","fl":""},{"id":"01t30000005Jj9aAAC","n":"Service Cloud - Performance Edition - (Flex User) - Limited","s":"210002633","f":"ED1","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t0M000007CnuUQAS","n":"Service Cloud - Performance Edition - (Restricted Use) - LP","s":"200013083","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000005Jj4PAAS","n":"Service Cloud - Performance Edition - LP","s":"210002670","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000005Jj4NAAS","n":"Service Cloud - Performance Edition (EUR & AUD)","s":"210002545","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000005Jj4LAAS","n":"Service Cloud - Performance Edition Limited","s":"210002279","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000006QtI0AAK","n":"Service Cloud - Professional Edition","s":"200012640","f":"ED1","a":1,"ph":"AARR","eos":"2025-02-03","m":"U","fl":""},{"id":"01t3y000007IJhtAAG","n":"Service Cloud - Professional Edition (Emerging Market)","s":"200013178","f":"ED1","a":1,"ph":"AARR","eos":"2025-02-03","m":"U","fl":""},{"id":"01t30000006QtIMAA0","n":"Service Cloud - Professional Edition (Restricted Use)","s":"200012687","f":"ED1","a":1,"ph":"AARR","eos":"2025-02-03","m":"U","fl":""},{"id":"01t3y000006epjKAAQ","n":"Service Cloud - UE - Controlled Setting","s":"200013192","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000006t4jWAAQ","n":"Service Cloud - UE - Controlled Setting - Air Gap","s":"200014122","f":"ED1","a":1,"ph":"","eos":"","m":"","fl":""},{"id":"01t3y000006epjLAAQ","n":"Service Cloud - UE (Restricted Use) - Controlled Setting","s":"200013193","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000006t4jXAAQ","n":"Service Cloud - UE (Restricted Use) - Controlled Setting - Air Gap","s":"200014123","f":"ED1","a":1,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000006QtI3AAK","n":"Service Cloud - Unlimited Edition","s":"200012643","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007EY2vAAG","n":"Service Cloud - Unlimited Edition - GCPD","s":"200003534","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007MJj3AAG","n":"Service Cloud - Unlimited Edition - HF OZ","s":"200013812","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000006QtI5AAK","n":"Service Cloud - Unlimited Edition - Nonprofit","s":"200012645","f":"ED1","a":1,"ph":"AARR","eos":"2020-08-18","m":"U","fl":""},{"id":"01t0M000006z1maQAA","n":"Service Cloud - Unlimited Edition (Emerging Market)","s":"200013128","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000006QtI6AAK","n":"Service Cloud - Unlimited Edition (Restricted Use)","s":"200012646","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007EY3oAAG","n":"Service Cloud - Unlimited Edition (Restricted Use) - GCPD","s":"200003535","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007MJj4AAG","n":"Service Cloud - Unlimited Edition (Restricted Use) - HF OZ","s":"200013813","f":"ED1","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000000b6mbAAA","n":"Service Cloud Lightning CRM - Professional Edition","s":"100000184","f":"ED1","a":1,"ph":"R","eos":"","m":"","fl":""},{"id":"01t0M000007BRoVQAW","n":"Desk.com to Service Cloud EE","s":"200013039","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000006QtISAA0","n":"Ltng Service Cloud - Enterprise Edition - (Off-Peak Shift User) - Gov Cloud","s":"200012651","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000006QtITAA0","n":"Ltng Service Cloud - Unlimited Edition - (Off-Peak Shift User) - Gov Cloud","s":"200012655","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005Jj9WAAS","n":"Sales & Service Cloud - Enterprise Edition - Gov Cloud (Service)","s":"200002418","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JiyTAAS","n":"Sales & Service Cloud - Enterprise Edition (Government) (Service)","s":"200000393","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005Jj95AAC","n":"Sales & Service Cloud - Enterprise Edition (Simplified Chinese) (Service)","s":"200000178","f":"ED1","a":0,"ph":"","eos":"2023-02-27","m":"","fl":""},{"id":"01t30000005Jj97AAC","n":"Sales & Service Cloud - Enterprise Edition (Traditional Chinese) (Service)","s":"200000180","f":"ED1","a":0,"ph":"","eos":"2023-02-27","m":"","fl":""},{"id":"01t30000005KZEwAAO","n":"Sales & Service Cloud - Flex User - Enterprise Edition - Gov Cloud (Service)","s":"200005667","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005KZFBAA4","n":"Sales & Service Cloud - Flex User - Unlimited Edition - Gov Cloud (Service)","s":"200005670","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005Jj9AAAS","n":"Sales & Service Cloud - Professional Edition (Simplified Chinese) (Service)","s":"200000183","f":"ED1","a":0,"ph":"","eos":"2023-02-27","m":"","fl":""},{"id":"01t30000005Jj9CAAS","n":"Sales & Service Cloud - Professional Edition (Traditional Chinese) (Service)","s":"200000185","f":"ED1","a":0,"ph":"","eos":"2023-02-27","m":"","fl":""},{"id":"01t30000005Jj1MAAS","n":"Sales & Service Cloud - Unlimited Edition - Gov Cloud (Service)","s":"210002419","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005Jj8TAAS","n":"Sales & Service Cloud - Unlimited Edition (Government) (Service)","s":"210000495","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JiyhAAC","n":"Sales & Service Cloud - Unlimited Edition (Simplified Chinese) (Service)","s":"200000454","f":"ED1","a":0,"ph":"","eos":"2023-02-27","m":"","fl":""},{"id":"01t30000005JiwwAAC","n":"Sales & Service Cloud - Unlimited Edition (Traditional Chinese) (Service)","s":"200000456","f":"ED1","a":0,"ph":"","eos":"2023-02-27","m":"","fl":""},{"id":"01t30000001GH84AAG","n":"Salesforce.org Sales & Service - Enterprise Edition (Service)","s":"100001415","f":"ED1","a":0,"ph":"","eos":"2025-11-03","m":"","fl":""},{"id":"01t30000001GH8JAAW","n":"Salesforce.org Service Cloud Ltng CRM - Ent. Ed. (Emerging Market)","s":"100001416","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t0M000003oVMIQA2","n":"Service Cloud - Enterprise Edition","s":"100003643","f":"ED1","a":0,"ph":"","eos":"2021-06-14","m":"","fl":""},{"id":"01t3y000007EY2tAAG","n":"Service Cloud - Enterprise Edition - GCPD","s":"200003532","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000006QtHyAAK","n":"Service Cloud - Enterprise Edition - Gov Cloud","s":"200012638","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000006QtI2AAK","n":"Service Cloud - Enterprise Edition - Gov Cloud (Restricted Use)","s":"200012642","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t3y000007EY2uAAG","n":"Service Cloud - Enterprise Edition (Restricted Use) - GCPD","s":"200003533","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t0M000003oVMLQA2","n":"Service Cloud - Flex User - Enterprise Edition","s":"100003645","f":"ED1","a":0,"ph":"","eos":"2021-06-14","m":"","fl":""},{"id":"01t3y000007J5BVAA0","n":"Service Cloud - Flex User - Enterprise Edition - GCPD","s":"200008584","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000006QtI9AAK","n":"Service Cloud - Flex User - Enterprise Edition - Gov Cloud","s":"200012649","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t0M000003oVMMQA2","n":"Service Cloud - Flex User - Unlimited Edition","s":"100003647","f":"ED1","a":0,"ph":"","eos":"2021-06-14","m":"","fl":""},{"id":"01t3y000007J5BWAA0","n":"Service Cloud - Flex User - Unlimited Edition - GCPD","s":"200008585","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000006QtICAA0","n":"Service Cloud - Flex User - Unlimited Edition - Gov Cloud","s":"200012653","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t0M000003oVMOQA2","n":"Service Cloud - Off-Peak Shift User - Enterprise Edition","s":"100003646","f":"ED1","a":0,"ph":"","eos":"2021-06-14","m":"","fl":""},{"id":"01t0M000003oVMPQA2","n":"Service Cloud - Off-Peak Shift User - Unlimited Edition","s":"100003648","f":"ED1","a":0,"ph":"","eos":"2021-06-14","m":"","fl":""},{"id":"01t30000001GtjKAAS","n":"Service Cloud - Performance Edition","s":"100002278","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JjBQAA0","n":"Service Cloud - Performance Edition","s":"210002278","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000004VoN2AAK","n":"Service Cloud - Performance Edition - (Flex User)","s":"100002652","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000004VoTYAA0","n":"Service Cloud - Performance Edition - (Flex User) - Limited","s":"100002633","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JjA7AAK","n":"Service Cloud - Performance Edition - (Off-Peak Shift User)","s":"210002655","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000004VoOOAA0","n":"Service Cloud - Performance Edition - (Off-Peak Shift User)","s":"100002655","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JjA8AAK","n":"Service Cloud - Performance Edition - (Off-Peak Shift User) - Limited","s":"210002725","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000004VoVZAA0","n":"Service Cloud - Performance Edition - (Off-Peak Shift User) - Limited","s":"100002725","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GtjQAAS","n":"Service Cloud - Performance Edition (Emerging Market)","s":"100002441","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JizGAAS","n":"Service Cloud - Performance Edition (Emerging Market)","s":"210002441","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GtoxAAC","n":"Service Cloud - Performance Edition (EUR & AUD)","s":"100002545","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005Jj8UAAS","n":"Service Cloud - Performance Edition (Government)","s":"210002438","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GtjSAAS","n":"Service Cloud - Performance Edition (Government)","s":"100002438","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000004VoJrAAK","n":"Service Cloud - Performance Edition (No Data.com)","s":"100002670","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GtjMAAS","n":"Service Cloud - Performance Edition (Portuguese)","s":"100002432","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JjBSAA0","n":"Service Cloud - Performance Edition (Portuguese)","s":"210002432","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JixNAAS","n":"Service Cloud - Performance Edition (Restricted Use)","s":"210002436","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GtjRAAS","n":"Service Cloud - Performance Edition (Restricted Use)","s":"100002436","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GtjNAAS","n":"Service Cloud - Performance Edition (Simplified Chinese)","s":"100002433","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005Jj4JAAS","n":"Service Cloud - Performance Edition (Simplified Chinese)","s":"210002433","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GtjOAAS","n":"Service Cloud - Performance Edition (Spanish)","s":"100002434","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JjBUAA0","n":"Service Cloud - Performance Edition (Spanish)","s":"210002434","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GtjPAAS","n":"Service Cloud - Performance Edition (Traditional Chinese)","s":"100002435","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005Jj4HAAS","n":"Service Cloud - Performance Edition (Traditional Chinese)","s":"210002435","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GtjLAAS","n":"Service Cloud - Performance Edition Limited","s":"100002279","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t0M000003oVMDQA2","n":"Service Cloud - Unlimited Edition","s":"100003644","f":"ED1","a":0,"ph":"","eos":"2021-06-14","m":"","fl":""},{"id":"01t30000006QtI4AAK","n":"Service Cloud - Unlimited Edition - Gov Cloud","s":"200012644","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000006QtI7AAK","n":"Service Cloud - Unlimited Edition - Gov Cloud (Restricted Use)","s":"200012647","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GcK5AAK","n":"Service Cloud Lightning CRM - Enterprise Edition","s":"100003073","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000004VoN1AAK","n":"Service Cloud Lightning CRM - Enterprise Edition - (Flex User)","s":"100002650","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000004VoOEAA0","n":"Service Cloud Lightning CRM - Enterprise Edition - (Off-Peak Shift User)","s":"100002653","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000003o4B7AAI","n":"Service Cloud Lightning CRM - Enterprise Edition - Corporate","s":"100002845","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GtrhAAC","n":"Service Cloud Lightning CRM - Enterprise Edition - Gov Cloud","s":"700000003","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GAYTAA4","n":"Service Cloud Lightning CRM - Enterprise Edition - Knowledge Pack","s":"100001238","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001G6QVAA0","n":"Service Cloud Lightning CRM - Enterprise Edition (Emerging Market)","s":"100001198","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000000boVkAAI","n":"Service Cloud Lightning CRM - Enterprise Edition (Government)","s":"100000363","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005Jix8AAC","n":"Service Cloud Lightning CRM - Enterprise Edition (Government) - Gov Cloud","s":"200002760","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000004VoawAAC","n":"Service Cloud Lightning CRM - Enterprise Edition (Government) - Gov Cloud","s":"700000023","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000000b6m7AAA","n":"Service Cloud Lightning CRM - Enterprise Edition (Portuguese)","s":"100000154","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GGhhAAG","n":"Service Cloud Lightning CRM - Enterprise Edition (Restricted Use)","s":"100001411","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000000b6nUAAQ","n":"Service Cloud Lightning CRM - Enterprise Edition (Simplified Chinese)","s":"100000239","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000000b6naAAA","n":"Service Cloud Lightning CRM - Enterprise Edition (Spanish)","s":"100000245","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000000b6nrAAA","n":"Service Cloud Lightning CRM - Enterprise Edition (Traditional Chinese)","s":"100000262","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001G6QQAA0","n":"Service Cloud Lightning CRM - Professional Edition (Emerging Market)","s":"100001199","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JixSAAS","n":"Service Cloud Lightning CRM - Professional Edition (Government)","s":"200000364","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000000boVpAAI","n":"Service Cloud Lightning CRM - Professional Edition (Government)","s":"100000364","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000000b6m9AAA","n":"Service Cloud Lightning CRM - Professional Edition (Portuguese)","s":"100000156","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000000b6nWAAQ","n":"Service Cloud Lightning CRM - Professional Edition (Simplified Chinese)","s":"100000241","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000000b6ncAAA","n":"Service Cloud Lightning CRM - Professional Edition (Spanish)","s":"100000247","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000000b6ntAAA","n":"Service Cloud Lightning CRM - Professional Edition (Traditional Chinese)","s":"100000264","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000000b6o2AAA","n":"Service Cloud Lightning CRM - Unlimited Edition","s":"100000273","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001G9KLAA0","n":"Service Cloud Lightning CRM - Unlimited Edition","s":"100003036","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000004VoN3AAK","n":"Service Cloud Lightning CRM - Unlimited Edition - (Flex User)","s":"100002651","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000004VoOJAA0","n":"Service Cloud Lightning CRM - Unlimited Edition - (Off-Peak Shift User)","s":"100002654","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GtrmAAC","n":"Service Cloud Lightning CRM - Unlimited Edition - Gov Cloud","s":"700000004","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GAYYAA4","n":"Service Cloud Lightning CRM - Unlimited Edition - Knowledge Pack","s":"100001239","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001G6c7AAC","n":"Service Cloud Lightning CRM - Unlimited Edition (Emerging Market)","s":"100001205","f":"ED1","a":0,"ph":"","eos":"2025-11-03","m":"","fl":""},{"id":"01t30000000cJzgAAE","n":"Service Cloud Lightning CRM - Unlimited Edition (Government)","s":"100000495","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JixnAAC","n":"Service Cloud Lightning CRM - Unlimited Edition (Government) - Gov Cloud","s":"210002762","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000004Vob9AAC","n":"Service Cloud Lightning CRM - Unlimited Edition (Government) - Gov Cloud","s":"700000025","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000000b6mBAAQ","n":"Service Cloud Lightning CRM - Unlimited Edition (Portuguese)","s":"100000158","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GGhrAAG","n":"Service Cloud Lightning CRM - Unlimited Edition (Restricted Use)","s":"100001412","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000000b6nYAAQ","n":"Service Cloud Lightning CRM - Unlimited Edition (Simplified Chinese)","s":"100000243","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000000b6neAAA","n":"Service Cloud Lightning CRM - Unlimited Edition (Spanish)","s":"100000249","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000000b6nvAAA","n":"Service Cloud Lightning CRM - Unlimited Edition (Traditional Chinese)","s":"100000266","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005KZF1AAO","n":"Service Cloud Ltng CRM - EE (Off-Peak Shift User) - Gov Cloud","s":"200005668","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005Jj9XAAS","n":"Service Cloud Ltng CRM - Enterprise Edition - Knowledge Pack - Gov Cloud","s":"200002420","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GtrrAAC","n":"Service Cloud Ltng CRM - Enterprise Edition - Knowledge Pack - Gov Cloud","s":"700000005","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005KZF6AAO","n":"Service Cloud Ltng CRM - Enterprise Edition (Restricted Use) - Gov Cloud","s":"200005669","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005KZFGAA4","n":"Service Cloud Ltng CRM - UE (Off-Peak Shift User) - Gov Cloud","s":"200005671","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005Jj1NAAS","n":"Service Cloud Ltng CRM - Unlimited Edition - Knowledge Pack - Gov Cloud","s":"210002421","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GtrwAAC","n":"Service Cloud Ltng CRM - Unlimited Edition - Knowledge Pack - Gov Cloud","s":"700000006","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000004VoewAAC","n":"Service Cloud Ltng CRM - Unlimited Edition (Restricted Use) - Gov Cloud","s":"700000065","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005Jiy3AAC","n":"Service Cloud Ltng CRM - Unlimited Edition (Restricted Use) - Gov Cloud","s":"210002919","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GH8OAAW","n":"XAT - Service Cloud - Nonprofit Edition","s":"100003048","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000000b6nlAAA","n":"XAT07 - Group Edition - Service & Support","s":"100000256","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001G78rAAC","n":"XAT12 - Salesforce Unlimited Edition (Call Center) Premier Training Promo","s":"100001215","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GCp3AAG","n":"XRA10 - Service Cloud - Enterprise Edition","s":"100001317","f":"ED1","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t3y000007mDGFAA2","n":"Alibaba - Service Cloud","s":"100004257","f":"KN","a":1,"ph":"","eos":"","m":"","fl":"b"},{"id":"01t3y000007MQFUAA4","n":"Connected Vehicles for Automotive Cloud - (Pilot)","s":"100004298","f":"KN","a":1,"ph":"","eos":"","m":"","fl":""},{"id":"01t3y0000075f85AAA","n":"EAC to UE (Pilot)","s":"100006850","f":"KN","a":1,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JizSAAS","n":"Enterprise Edition (Knowledge-only)","s":"200000004","f":"KN","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005Jj8QAAS","n":"Flex User - Monthly Overage Logins","s":"200002634","f":"KN","a":1,"ph":"AARR","eos":"2026-07-21","m":"C","fl":"b"},{"id":"01t0M0000074jG9QAI","n":"Ideas & Answers-only","s":"200012914","f":"KN","a":1,"ph":"AARR","eos":"","m":"","fl":""},{"id":"01t30000005JiznAAC","n":"Knowledge","s":"200000008","f":"KN","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000006t4ilAAA","n":"Knowledge - Air Gap","s":"200014075","f":"KN","a":1,"ph":"","eos":"","m":"","fl":""},{"id":"01t3y000007EY0sAAG","n":"Knowledge - GCPD","s":"200003463","f":"KN","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007MJhKAAW","n":"Knowledge - HF OZ","s":"200013748","f":"KN","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M000006wm5OQAQ","n":"Knowledge - Value Bundle","s":"200012857","f":"KN","a":1,"ph":"RR","eos":"","m":"U","fl":""},{"id":"01t30000005Jj0gAAC","n":"Knowledge for Nonprofits","s":"200001278","f":"KN","a":1,"ph":"AARR","eos":"2020-08-18","m":"U","fl":""},{"id":"01t30000005Jj5GAAS","n":"Performance Edition (Knowledge-only)","s":"210002457","f":"KN","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t30000005JiysAAC","n":"Salesforce Knowledge","s":"200000998","f":"KN","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t3y000007EJK6AAO","n":"Scale Sandbox (Pilot)","s":"100006849","f":"KN","a":1,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JjEIAA0","n":"Unlimited Edition (Knowledge-only)","s":"200000513","f":"KN","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t3y000007fgwMAAQ","n":"Connect Center (Pilot)","s":"100006262","f":"KN","a":0,"ph":"","eos":"2024-04-01","m":"","fl":""},{"id":"01t30000005Jj5RAAS","n":"Enterprise Edition (Ideas & Answers-only)","s":"200000298","f":"KN","a":0,"ph":"","eos":"2023-02-27","m":"","fl":""},{"id":"01t30000001GA9iAAG","n":"Enterprise Edition (Knowledge-only)","s":"100001232","f":"KN","a":0,"ph":"","eos":"2025-11-03","m":"","fl":""},{"id":"01t30000001GB9zAAG","n":"Enterprise Edition (Knowledge-only)","s":"100003041","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GtsaAAC","n":"Enterprise Edition (Knowledge-only) - Gov Cloud","s":"700000011","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JjA3AAK","n":"Enterprise Edition (Knowledge-only) - Gov Cloud","s":"200002428","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005Jj0hAAC","n":"Enterprise Edition (Knowledge-only) for Nonprofits","s":"200001279","f":"KN","a":0,"ph":"","eos":"2023-02-27","m":"","fl":""},{"id":"01t30000001GB9uAAG","n":"Enterprise Edition (Knowledge-only) for Nonprofits","s":"100001279","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GFgTAAW","n":"Entitlements","s":"100001398","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005Jj3tAAC","n":"Entitlements","s":"200001398","f":"KN","a":0,"ph":"","eos":"2026-07-21","m":"","fl":""},{"id":"01t30000005JizUAAS","n":"Entitlements","s":"200001399","f":"KN","a":0,"ph":"","eos":"2025-11-03","m":"","fl":""},{"id":"01t30000001GFgYAAW","n":"Entitlements","s":"100001399","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000004VoUCAA0","n":"Flex User - Monthly Overage Logins","s":"100002634","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t0M0000074jGPQAY","n":"Ideas & Answers-only - Foundation","s":"100005564","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GB8NAAW","n":"Knowledge","s":"100003039","f":"KN","a":0,"ph":"","eos":"2021-06-14","m":"","fl":""},{"id":"01t30000001G9MqAAK","n":"Knowledge","s":"100001221","f":"KN","a":0,"ph":"","eos":"2025-11-03","m":"","fl":""},{"id":"01t30000001G9MgAAK","n":"Knowledge","s":"100001220","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005Jj8aAAC","n":"Knowledge - Enterprise Edition (Third Party Hosted)","s":"200000639","f":"KN","a":0,"ph":"","eos":"2023-02-27","m":"","fl":""},{"id":"01t30000004Vof6AAC","n":"Knowledge - Gov Cloud","s":"700000064","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005Jj1JAAS","n":"Knowledge - Gov Cloud","s":"200002817","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JjCCAA0","n":"Knowledge - Performance Edition (Third Party Hosted)","s":"210001063","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JjENAA0","n":"Knowledge - Unlimited Edition (Third Party Hosted)","s":"200000526","f":"KN","a":0,"ph":"","eos":"2023-02-27","m":"","fl":""},{"id":"01t30000001GB8IAAW","n":"Knowledge for Nonprofits","s":"100001278","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GtkSAAS","n":"Performance Edition (Knowledge-only)","s":"100002457","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JjCWAA0","n":"Professional Edition (Ideas & Answers-only)","s":"200000300","f":"KN","a":0,"ph":"","eos":"2023-02-27","m":"","fl":""},{"id":"01t30000005JjCIAA0","n":"Unlimited Edition (Ideas & Answers-only)","s":"200000534","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GA9nAAG","n":"Unlimited Edition (Knowledge-only)","s":"100001233","f":"KN","a":0,"ph":"","eos":"2025-11-03","m":"","fl":""},{"id":"01t30000001GpdAAAS","n":"Unlimited Edition (Knowledge-only)","s":"100003143","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005Jix1AAC","n":"Unlimited Edition (Knowledge-only) - Gov Cloud","s":"210002429","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GtsfAAC","n":"Unlimited Edition (Knowledge-only) - Gov Cloud","s":"700000012","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001FRg3AAG","n":"XRA09 - Salesforce Knowledge","s":"100000998","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001FzDTAA0","n":"XRA09 - Salesforce Knowledge for Self-Service, 24 Million Hits","s":"100001049","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t300000010xaVAAQ","n":"XRA10 - Enterprise Edition (Ideas & Answers-only)","s":"100000752","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001FywSAAS","n":"XRA10 - Knowledge (Third Party Hosted)","s":"100001062","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001FywXAAS","n":"XRA10 - Knowledge (Third Party Hosted)","s":"100001063","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t300000010xaUAAQ","n":"XRA10 - Professional Edition (Ideas & Answers-only)","s":"100000751","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t300000010xaWAAQ","n":"XRA10 - Unlimited Edition (Ideas & Answers-only)","s":"100000753","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001G9bvAAC","n":"XRA10 - Unlimited Edition (Ideas & Answers-only) for Nonprofits","s":"100003037","f":"KN","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01ted000007JI5FAAW","n":"Agentforce Contact Center - Enterprise Edition","s":"200007170","f":"AFCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000007JI5GAAW","n":"Agentforce Contact Center - Unlimited Edition","s":"200007171","f":"AFCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000007JI5HAAW","n":"Agentforce Contact Center - Performance Edition","s":"200007172","f":"AFCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000005TSvhAAG","n":"Agentforce Contact Center - Enterprise Edition - LP1","s":"200007140","f":"AFCC","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01ted0000065y05AAA","n":"Agentforce Contact Center - Unlimited Edition - LP1","s":"200007141","f":"AFCC","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01ted0000065y06AAA","n":"Agentforce Contact Center - Performance Edition - LP1","s":"200007142","f":"AFCC","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01ted000006zmx7AAA","n":"Agentforce Contact Center Plus - Enterprise Edition","s":"200007143","f":"AFCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000006zmx8AAA","n":"Agentforce Contact Center Plus - Unlimited Edition","s":"200007144","f":"AFCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000006zmx9AAA","n":"Agentforce Contact Center Plus - Performance Edition","s":"200007145","f":"AFCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000007JI5IAAW","n":"Agentforce Contact Center Voice","s":"200007173","f":"AFCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted0000065y08AAA","n":"Agentforce Contact Center Voice - LP1","s":"200007146","f":"AFCC","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01ted000006zmxEAAQ","n":"Contact Center Number Lease (Long Code) - US/CAN (Group A)","s":"200007152","f":"AFCC","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000006zmxFAAQ","n":"Contact Center Number Lease (Toll Free) - US/CAN (Group A)","s":"200007153","f":"AFCC","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000004m8PBAAY","n":"Contact Center Number Lease (Long Code) - US/Can (Group A) - LP1","s":"200003124","f":"AFCC","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01ted000005TSxJAAW","n":"Contact Center Number Lease (Toll Free) - US/CAN (Group A) - LP1","s":"200007148","f":"AFCC","a":1,"ph":"AARR","eos":"","m":"O","fl":""},{"id":"01ted000006zmxAAAQ","n":"Contact Center Voice Credits (Inbound) (100k)","s":"200007150","f":"AFCC","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted000006zmxBAAQ","n":"Contact Center Voice Credits (Outbound) (100k)","s":"200007151","f":"AFCC","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted000004m8SPAAY","n":"Contact Center Voice Credits (Inbound) - LP1","s":"200003125","f":"AFCC","a":1,"ph":"AARR","eos":"","m":"O","fl":""},{"id":"01ted000005TSyvAAG","n":"Contact Center Voice Credits (Outbound) - LP1","s":"200007147","f":"AFCC","a":1,"ph":"AARR","eos":"","m":"O","fl":""},{"id":"01ted000006zmxDAAQ","n":"Contact Center Voice Credits - Usage","s":"200007186","f":"AFCC","a":1,"ph":"","eos":"","m":"C","fl":"b"},{"id":"01ted000006zmxCAAQ","n":"Contact Center Voice Credits - Overage","s":"200007185","f":"AFCC","a":1,"ph":"","eos":"","m":"C","fl":"b"},{"id":"01ted000007KEKXAA4","n":"Telephony Transport","s":"200007174","f":"AFCC","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01t3y000006tNT9AAM","n":"Contact Center - Unlimited Edition - LP1","s":"200001839","f":"AFCC","a":1,"ph":"AARR","eos":"","m":"C","fl":""},{"id":"01t3y000006tNTEAA2","n":"Contact Center - Performance Edition - LP1","s":"200001840","f":"AFCC","a":1,"ph":"AARR","eos":"","m":"C","fl":""},{"id":"01ted0000034mh6AAA","n":"Contact Center - Unlimited Edition - GCPD","s":"200008786","f":"AFCC","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01t3y000006tNTJAA2","n":"Amazon Connect for Contact Center (750 mins)","s":"200001841","f":"AFCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000006tNTFAA2","n":"Amazon Connect for Contact Center (2,000 mins)","s":"200001842","f":"AFCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000006tNTGAA2","n":"Amazon Connect for Contact Center (5,000 mins)","s":"200001843","f":"AFCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000006f0waAAA","n":"Partner Contact Center - Enterprise Edition","s":"200001165","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000006f0wfAAA","n":"Partner Contact Center - Unlimited Edition","s":"200001166","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000006f0wkAAA","n":"Partner Contact Center - Performance Edition","s":"200001167","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted0000034mfjAAA","n":"Partner Contact Center - Enterprise Edition - GCPD","s":"200008778","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted0000034mh4AAA","n":"Partner Contact Center - Unlimited Edition - GCPD","s":"200008779","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007EJQ0AAO","n":"Partner Contact Center - Bring Your Own Amazon Connect - Enterprise Edition","s":"200001726","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007EJQ1AAO","n":"Partner Contact Center - Bring Your Own Amazon Connect - Unlimited Edition","s":"200001727","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007EJQ2AAO","n":"Partner Contact Center - Bring Your Own Amazon Connect - PxE","s":"200001728","f":"PCC","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01ted0000034me8AAA","n":"Partner Contact Center - Bring Your Own Amazon Connect - EE - GCPD","s":"200008782","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted0000034mfRAAQ","n":"Partner Contact Center - Bring Your Own Amazon Connect - UE - GCPD","s":"200008783","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000075VihQAE","n":"Partner Contact Center with Amazon Connect - Enterprise Edition (750 mins)","s":"200000944","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000075VimQAE","n":"Partner Contact Center with Amazon Connect - EE (2,000 mins)","s":"200000945","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000075VirQAE","n":"Partner Contact Center with Amazon Connect - EE (5,000 mins)","s":"200000946","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000075VjLQAU","n":"Partner Contact Center with Amazon Connect - Unlimited Edition (750 mins)","s":"200000954","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000075VjVQAU","n":"Partner Contact Center with Amazon Connect - Unlimited Edition (2,000 mins)","s":"200000955","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000075VjWQAU","n":"Partner Contact Center with Amazon Connect - Unlimited Edition (5,000 mins)","s":"200000956","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000075VjQQAU","n":"Partner Contact Center with Amazon Connect - Performance Edition (750 mins)","s":"200000957","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000075VjaQAE","n":"Partner Contact Center with Amazon Connect - PxE (2,000 mins)","s":"200000958","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000075VjfQAE","n":"Partner Contact Center with Amazon Connect - PxE (5,000 mins)","s":"200000959","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007XirQAAS","n":"Partner Contact Center - Additional AWS Services","s":"200003139","f":"PCC","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01t3y000006jOJTAA2","n":"Partner Contact Center - Additional AWS Services Group (ASP)","s":"100006356","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":"b"},{"id":"01t3y000006jOJYAA2","n":"Partner Contact Center - Additional AWS Services Group (ASE)","s":"100006357","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":"b"},{"id":"01t3y000007EJQ5AAO","n":"Partner Contact Center - Amazon BYOA Revenue Share","s":"200001729","f":"PCC","a":1,"ph":"","eos":"","m":"O","fl":"b"},{"id":"01t0M0000075Vj1QAE","n":"Partner Contact Center - Amazon Connect - Lex (1,000)","s":"200000948","f":"PCC","a":1,"ph":"","eos":"","m":"C","fl":"b"},{"id":"01t0M0000075Vj2QAE","n":"Partner Contact Center - Amazon Connect - Lex Overage","s":"200000950","f":"PCC","a":1,"ph":"","eos":"","m":"C","fl":"b"},{"id":"01t0M0000075ViwQAE","n":"Partner Contact Center - Amazon Connect - Platform Minutes (1,000)","s":"200000947","f":"PCC","a":1,"ph":"","eos":"","m":"C","fl":"b"},{"id":"01t0M0000075Vj6QAE","n":"Partner Contact Center - Amazon Connect - Platform Minutes Overage","s":"200000949","f":"PCC","a":1,"ph":"","eos":"","m":"C","fl":"b"},{"id":"01t0M0000075VjGQAU","n":"Partner Contact Center Telephony Charges provided by AMCS LLC","s":"200000952","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":"b"},{"id":"01t3y000007XI73AAG","n":"Partner Contact Center Telephony Charges provided by AMCS SG Private Ltd","s":"200001184","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":"b"},{"id":"01ted0000066F5lAAE","n":"Partner Contact Center Telephony E911 Tax by AMCS LLC","s":"100006490","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":"b"},{"id":"01t0M000007DxuxQAC","n":"Partner Contact Center Telephony Government Fees provided by AMCS LLC","s":"200000943","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":"b"},{"id":"01t3y000007XI6yAAG","n":"Partner Contact Center Telephony Government Fees (AMCS SG Private Limited)","s":"200001183","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":"b"},{"id":"01t0M0000075VjHQAU","n":"Partner Contact Center Telephony Tax provided by AMCS LLC","s":"200000953","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":"b"},{"id":"01t3y000007XI78AAG","n":"Partner Contact Center Telephony Tax provided by AMCS SG Private Limited","s":"200001185","f":"PCC","a":1,"ph":"","eos":"","m":"U","fl":"b"},{"id":"01ted000004m8LxAAI","n":"Partner Voice Forwarding for Agentforce Voice - LP1","s":"200003123","f":"PCC","a":1,"ph":"AARR","eos":"2026-07-01","m":"O","fl":""},{"id":"01t0M0000075VjBQAU","n":"Amazon Enterprise Support","s":"200000951","f":"PCC","a":1,"ph":"AR","eos":"2023-11-01","m":"U","fl":""},{"id":"01t3y000006WZmvAAG","n":"Contact Lens for Amazon Connect (1,000 Minutes) - Up to 5M Minutes","s":"200000979","f":"PCC","a":1,"ph":"AR","eos":"2025-06-17","m":"C","fl":""},{"id":"01t3y000006WZn0AAG","n":"Contact Lens for Amazon Connect (1,000 Minutes) - Over 5M Minutes","s":"200000980","f":"PCC","a":0,"ph":"","eos":"2025-06-17","m":"C","fl":""},{"id":"01t0M000004XpZQQA0","n":"Service Cloud Voice - Enterprise Edition - LP","s":"200000937","f":"PCC","a":0,"ph":"","eos":"2021-06-15","m":"U","fl":""},{"id":"01t0M000004XpZVQA0","n":"Service Cloud Voice - Unlimited Edition - LP","s":"200000938","f":"PCC","a":0,"ph":"","eos":"2021-06-15","m":"U","fl":""},{"id":"01t0M000004XpZaQAK","n":"Service Cloud Voice - Performance Edition - LP","s":"200000939","f":"PCC","a":0,"ph":"","eos":"2023-02-27","m":"U","fl":""},{"id":"01ted000005TT0XAAW","n":"Agentforce Contact Center Digital - Enterprise Edition","s":"200014250","f":"DIG","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000005TT29AAG","n":"Agentforce Contact Center Digital - Unlimited Edition","s":"200014251","f":"DIG","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000005TT3lAAG","n":"Agentforce Contact Center Digital - Performance Edition","s":"200014252","f":"DIG","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000005TTOjAAO","n":"Salesforce Long Code Brand - Rate Group 1 - Contact Center Digital","s":"200014265","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000005TTQLAA4","n":"Salesforce Long Code Brand - Rate Group 2 - Contact Center Digital","s":"200014266","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000005TTIHAA4","n":"Salesforce Long Code Campaign - Rate Group 1 - Contact Center Digital","s":"200014261","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000005TT8bAAG","n":"Salesforce Long Code Lease - Rate Group 1 - Contact Center Digital","s":"200014255","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000005TT6zAAG","n":"Salesforce Long Code Lease - Rate Group 2 - Contact Center Digital","s":"200014256","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000005TTBpAAO","n":"Salesforce Long Code Lease - Rate Group 3 - Contact Center Digital","s":"200014257","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000005TTADAA4","n":"Salesforce Long Code Lease - Rate Group 4 - Contact Center Digital","s":"200014258","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000005TTF3AAO","n":"Salesforce Long Code Lease - Rate Group 5 - Contact Center Digital","s":"200014259","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000005TTJtAAO","n":"Salesforce Long Code Setup - Rate Group 1 - Contact Center Digital","s":"200014263","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000005TTLVAA4","n":"Salesforce Long Code Setup - Rate Group 2 - Contact Center Digital","s":"200014264","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000005TT5NAAW","n":"Salesforce Short Code Lease - Rate Group 1 - Contact Center Digital","s":"200014253","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000005TTDRAA4","n":"Salesforce Short Code Lease - Rate Group 2 - Contact Center Digital","s":"200014254","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000005TTN7AAO","n":"Salesforce Short Code Setup - Rate Group 1 - Contact Center Digital","s":"200014262","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000005TTGfAAO","n":"Salesforce Toll Free Lease - Rate Group 1 - Contact Center Digital","s":"200014260","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000002C6bZAAS","n":"Salesforce Message Credits - SMS (1,000)","s":"200004207","f":"DIG","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted0000034mfkAAA","n":"Salesforce Message Credits - SMS (1,000) - GCPD","s":"200008797","f":"DIG","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted000008xN0nAAE","n":"Salesforce Message Credits - SMS - Usage","s":"100006668","f":"DIG","a":1,"ph":"","eos":"","m":"C","fl":"b"},{"id":"01t3y000007F9uZAAS","n":"Salesforce Message Credits - WhatsApp (1,000)","s":"200008690","f":"DIG","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted0000034mfgAAA","n":"Salesforce Message Credits - WhatsApp (1,000) - GCPD","s":"200008807","f":"DIG","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted000008xMzBAAU","n":"Salesforce Message Credits - WhatsApp - Usage","s":"100006666","f":"DIG","a":1,"ph":"","eos":"","m":"C","fl":"b"},{"id":"01t0M0000074jDQQAY","n":"Service Messages Overages","s":"200012819","f":"DIG","a":1,"ph":"","eos":"","m":"C","fl":"b"},{"id":"01t0M00000715evQAA","n":"Digital Engagement - Enterprise Edition - LP1","s":"200000069","f":"DIG","a":1,"ph":"AARR","eos":"2026-03-02","m":"U","fl":""},{"id":"01t0M00000715fZQAQ","n":"Digital Engagement - Unlimited Edition - LP1","s":"200000070","f":"DIG","a":1,"ph":"AARR","eos":"2026-03-02","m":"U","fl":""},{"id":"01t0M00000715feQAA","n":"Digital Engagement - Performance Edition - LP1","s":"200000073","f":"DIG","a":1,"ph":"AARR","eos":"2026-03-02","m":"U","fl":""},{"id":"01t0M00000715f5QAA","n":"Digital Engagement - Additional Conversations (100) - LP1","s":"200000071","f":"DIG","a":1,"ph":"AARR","eos":"2026-03-02","m":"C","fl":""},{"id":"01t0M00000715fUQAQ","n":"Digital Engagement - Additional Triggered & Bulk Messages (1,000) - LP1","s":"200000074","f":"DIG","a":1,"ph":"AARR","eos":"2026-03-02","m":"C","fl":""},{"id":"01t0M000007LwXTQA0","n":"Digital Engagement - WhatsApp Outbound Messages (1,000) - LP1","s":"200000810","f":"DIG","a":1,"ph":"AARR","eos":"2026-03-02","m":"C","fl":""},{"id":"01t0M000007LwXVQA0","n":"Digital Engagement - Short Code (US) - LP1","s":"200000811","f":"DIG","a":1,"ph":"AARR","eos":"2026-03-02","m":"O","fl":""},{"id":"01t0M000007LwcjQAC","n":"Digital Engagement - Short Code (CA) - LP1","s":"200000849","f":"DIG","a":1,"ph":"AARR","eos":"2026-03-02","m":"O","fl":""},{"id":"01t0M000007LwXWQA0","n":"Digital Engagement - Vanity Short Code (US) - LP1","s":"200000812","f":"DIG","a":1,"ph":"AARR","eos":"2026-03-02","m":"O","fl":""},{"id":"01t0M000007LwXUQA0","n":"Digital Engagement - Short Code Set Up - LP1","s":"200000813","f":"DIG","a":1,"ph":"AARR","eos":"2026-03-02","m":"O","fl":""},{"id":"01ted000000SXqfAAG","n":"Digital Engagement - Enterprise Edition - GCPD","s":"200004041","f":"DIG","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000000SXx7AAG","n":"Digital Engagement - Unlimited Edition - GCPD","s":"200004045","f":"DIG","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000000SXnRAAW","n":"Digital Engagement - Additional Conversations (100) - GCPD","s":"200004039","f":"DIG","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted000000SXp3AAG","n":"Digital Engagement - Additional Triggered & Bulk Messages (1,000) - GCPD","s":"200004040","f":"DIG","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted000000SXsHAAW","n":"Digital Engagement - Short Code (CA) - GCPD","s":"200004042","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000000SXttAAG","n":"Digital Engagement - Short Code (US) - GCPD","s":"200004043","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000000SXvVAAW","n":"Digital Engagement - Short Code Set Up - GCPD","s":"200004044","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000000SXyjAAG","n":"Digital Engagement - Vanity Short Code (US) - GCPD","s":"200004046","f":"DIG","a":1,"ph":"","eos":"","m":"O","fl":""},{"id":"01ted000000SY0LAAW","n":"Digital Engagement - WhatsApp Outbound Messages (1,000) - GCPD","s":"200004047","f":"DIG","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01t0M0000075McZQAU","n":"Digital Engagement - Essentials Edition","s":"200000571","f":"DIG","a":1,"ph":"AARR","eos":"2025-10-21","m":"U","fl":""},{"id":"01t0M0000075McjQAE","n":"Digital Engagement - Essentials Edition - Monthly","s":"200000572","f":"DIG","a":1,"ph":"AARR","eos":"2025-10-21","m":"U","fl":""},{"id":"01ted0000034mcOAAQ","n":"Salesforce Channels Credits (1,000)","s":"200003685","f":"DIG","a":1,"ph":"AARR","eos":"2025-05-21","m":"U","fl":""},{"id":"01ted0000034o4XAAQ","n":"Salesforce Channels Credits - Overages","s":"200003688","f":"DIG","a":1,"ph":"AARR","eos":"2025-05-21","m":"C","fl":"b"},{"id":"01t3y000007TdRqAAK","n":"Messaging for In-App and Web","s":"200000599","f":"DIG","a":1,"ph":"R","eos":"2023-06-13","m":"U","fl":""},{"id":"01t3y000006bkgkAAA","n":"Messaging for In-App and Web - Enterprise Edition","s":"200000872","f":"DIG","a":1,"ph":"R","eos":"2023-06-13","m":"U","fl":""},{"id":"01t30000005Jiy5AAC","n":"Live Agent","s":"200000009","f":"DIG","a":1,"ph":"AR","eos":"2019-07-16","m":"U","fl":""},{"id":"01t0M000006wm5TQAQ","n":"Live Agent - Value Bundle","s":"200012858","f":"DIG","a":1,"ph":"AR","eos":"","m":"U","fl":""},{"id":"01t30000005Jj1XAAS","n":"Live Agent for Nonprofits","s":"200001871","f":"DIG","a":1,"ph":"AR","eos":"2020-08-18","m":"U","fl":""},{"id":"01t30000004VozUAAS","n":"SOS","s":"200005665","f":"DIG","a":1,"ph":"R","eos":"2019-03-19","m":"","fl":""},{"id":"01t30000005JjCaAAK","n":"Activa Live Agent for Salesforce","s":"200000333","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000005JizIAAS","n":"Activa Live Agent for Salesforce (1 Free Seat Promotional Offer)","s":"200001737","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GS4VAAW","n":"ActivaLive Chat Admin Chatlet","s":"100001727","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GRKnAAO","n":"ActivaLive Chat Operator","s":"100001726","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GS4aAAG","n":"ActivaLive Chat Salesforce CRM Chatlet","s":"100001728","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GS4fAAG","n":"ActivaLive Chat Salesforce VF Chatlet","s":"100001729","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t3y000007DxweAAC","n":"Broadcast Messaging - Enterprise Edition","s":"200013241","f":"DIG","a":0,"ph":"","eos":"2024-05-14","m":"U","fl":""},{"id":"01t3y000007DxwjAAC","n":"Broadcast Messaging - Unlimited Edition","s":"200013242","f":"DIG","a":0,"ph":"","eos":"2024-05-14","m":"U","fl":""},{"id":"01t3y000007DxwoAAC","n":"Broadcast Messaging - Performance Edition","s":"200013243","f":"DIG","a":0,"ph":"","eos":"2024-05-14","m":"U","fl":""},{"id":"01t0M000007Lw9lQAC","n":"Digital Engagement","s":"100002786","f":"DIG","a":0,"ph":"","eos":"2021-06-14","m":"U","fl":""},{"id":"01t0M000007Lw9qQAC","n":"Digital Engagement - Additional Conversations (100)","s":"100002789","f":"DIG","a":0,"ph":"","eos":"2021-06-14","m":"C","fl":""},{"id":"01t0M000007Lw9vQAC","n":"Digital Engagement - Additional Triggered & Bulk Messages (1,000)","s":"100002790","f":"DIG","a":0,"ph":"","eos":"2021-06-14","m":"C","fl":""},{"id":"01t0M0000075VjkQAE","n":"Digital Engagement - WhatsApp Outbound Messages (1,000)","s":"100003756","f":"DIG","a":0,"ph":"","eos":"2021-06-14","m":"C","fl":""},{"id":"01t0M00000715f0QAA","n":"Digital Engagement Short Code","s":"200000072","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t0M00000715fKQAQ","n":"Digital Engagement Short Code Set Up","s":"200000077","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t0M00000715fFQAQ","n":"Digital Engagement Vanity Short Code","s":"200000076","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GlgJAAS","n":"Live Agent","s":"100001858","f":"DIG","a":0,"ph":"","eos":"2025-02-18","m":"","fl":""},{"id":"01t30000001GlgTAAS","n":"Live Agent","s":"100003097","f":"DIG","a":0,"ph":"","eos":"2021-06-14","m":"U","fl":""},{"id":"01t30000005Jj1IAAS","n":"Live Agent - Gov Cloud","s":"200002800","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000004VobDAAS","n":"Live Agent - Gov Cloud","s":"700000063","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GlgOAAS","n":"Live Agent for Nonprofits","s":"100001871","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t0M000006sFoXQAU","n":"LiveMessage","s":"100005758","f":"DIG","a":0,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000074jDCQAY","n":"LiveMessage - Enterprise Edition","s":"200012812","f":"DIG","a":0,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000074jDKQAY","n":"LiveMessage - Unlimited Edition","s":"200012813","f":"DIG","a":0,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000074jDJQAY","n":"LiveMessage - Performance Edition","s":"200012814","f":"DIG","a":0,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M00000715foQAA","n":"LiveMessage (Pilot)","s":"100002991","f":"DIG","a":0,"ph":"","eos":"2023-02-27","m":"U","fl":""},{"id":"01t0M0000074jBMQAY","n":"LiveMessage Forecasting Only - Internal Only","s":"200012797","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t0M0000074jDIQAY","n":"LiveMessage Short Code","s":"200012821","f":"DIG","a":0,"ph":"","eos":"2023-11-01","m":"O","fl":""},{"id":"01t0M000006sFoYQAU","n":"LiveMessage Short Code","s":"100005759","f":"DIG","a":0,"ph":"","eos":"2021-06-14","m":"O","fl":""},{"id":"01t0M0000074jDHQAY","n":"LiveMessage Short Code Set Up","s":"200012820","f":"DIG","a":0,"ph":"","eos":"2023-11-01","m":"O","fl":""},{"id":"01t0M000006sFoZQAU","n":"LiveMessage Short Code Set Up","s":"100005760","f":"DIG","a":0,"ph":"","eos":"2021-06-14","m":"O","fl":""},{"id":"01t0M000006sFoaQAE","n":"LiveMessage Vanity Short Code","s":"100005761","f":"DIG","a":0,"ph":"","eos":"2021-06-14","m":"O","fl":""},{"id":"01t0M0000074jEtQAI","n":"LiveMessage Vanity Short Code","s":"200012891","f":"DIG","a":0,"ph":"","eos":"2023-11-01","m":"O","fl":""},{"id":"01t0M000006sFobQAE","n":"LiveMessage+","s":"100005762","f":"DIG","a":0,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000074jDEQAY","n":"LiveMessage+ - Enterprise Edition","s":"200012815","f":"DIG","a":0,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000074jDGQAY","n":"LiveMessage+ - Unlimited Edition","s":"200012816","f":"DIG","a":0,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000074jDFQAY","n":"LiveMessage+ - Performance Edition","s":"200012817","f":"DIG","a":0,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M000006sFocQAE","n":"LiveMessage++","s":"100005763","f":"DIG","a":0,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000074jEpQAI","n":"LiveMessage++ - Enterprise Edition","s":"200012888","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t0M0000074jEqQAI","n":"LiveMessage++ - Unlimited Edition","s":"200012889","f":"DIG","a":0,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M0000074jErQAI","n":"LiveMessage++ - Performance Edition","s":"200012890","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01ted0000034mh3AAA","n":"Salesforce Message Credits - SMS (1,000) - GCPD","s":"200008798","f":"DIG","a":0,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted0000034mfhAAA","n":"Salesforce Message Credits - WhatsApp (1,000) - GCPD","s":"200008808","f":"DIG","a":0,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted0000014JUWAA2","n":"Salesforce Message Credits - WhatsApp for Marketing (1,000)","s":"200007058","f":"DIG","a":0,"ph":"","eos":"","m":"C","fl":""},{"id":"01t0M000006sFodQAE","n":"Service Message Pack (1,000)","s":"100005765","f":"DIG","a":0,"ph":"","eos":"2021-06-14","m":"C","fl":""},{"id":"01t0M0000074jDDQAY","n":"Service Message Pack (1,000)","s":"200012818","f":"DIG","a":0,"ph":"","eos":"2023-11-01","m":"C","fl":""},{"id":"01t0M000006sFoeQAE","n":"Service Message Pack for LiveMessage++ (1,000)","s":"100005764","f":"DIG","a":0,"ph":"","eos":"2021-06-14","m":"C","fl":""},{"id":"01t0M0000074jEsQAI","n":"Service Message Pack for LiveMessage++ (1,000)","s":"200012892","f":"DIG","a":0,"ph":"","eos":"2023-11-01","m":"C","fl":""},{"id":"01t0M000006ydJVQAY","n":"Social Customer Service Pro","s":"100003676","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t0M000006sFoNQAU","n":"Social Customer Service Pro","s":"200013030","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t0M000003fjbAQAQ","n":"Social Customer Service Pro - Value Bundle","s":"211102368","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GUJVAA4","n":"XAT14 - Activa Live Agent for Salesforce","s":"100001736","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t30000001GUJaAAO","n":"XAT14 - Activa Live Agent for Salesforce (1 Free Seat Promotional Offer)","s":"100001737","f":"DIG","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t3y000007LxH8AAK","n":"Agentforce Contact Center - Workforce Management - Enterprise Edition","s":"200001370","f":"WEM","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007LxH9AAK","n":"Agentforce Contact Center - Workforce Management - Unlimited Edition","s":"200001371","f":"WEM","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007LxHAAA0","n":"Agentforce Contact Center - Workforce Management - Performance Edition","s":"200001372","f":"WEM","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000008xMr7AAE","n":"Contact Center - Quality Management - Enterprise Edition","s":"200009361","f":"WEM","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000008xMpVAAU","n":"Contact Center - Quality Management - Unlimited Edition","s":"200009360","f":"WEM","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007TAjrAAG","n":"Workforce Engagement (Pilot)","s":"100000000","f":"WEM","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01ted0000068EqLAAU","n":"Service Intelligence - Enterprise Edition","s":"200004910","f":"SI","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted0000068EwnAAE","n":"Service Intelligence - Unlimited Edition","s":"200004915","f":"SI","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted00000688eUAAQ","n":"Service Intelligence - Performance Edition","s":"200004911","f":"SI","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007J5JaAAK","n":"Service Intelligence - Enterprise Edition - LP1","s":"200014149","f":"SI","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t3y000007J5JbAAK","n":"Service Intelligence - Unlimited Edition - LP1","s":"200014150","f":"SI","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t3y000007J5JcAAK","n":"Service Intelligence - Performance Edition - LP1","s":"200014151","f":"SI","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01ted0000068ErxAAE","n":"Service Intelligence + Tableau - Enterprise Edition","s":"200004912","f":"SI","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted0000068EvBAAU","n":"Service Intelligence + Tableau - Unlimited Edition","s":"200004914","f":"SI","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted0000068EtZAAU","n":"Service Intelligence + Tableau - Performance Edition","s":"200004913","f":"SI","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y000007J5JjAAK","n":"Service Intelligence + Tableau - Enterprise Edition - LP1","s":"200014146","f":"SI","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t3y000007J5JlAAK","n":"Service Intelligence + Tableau - Unlimited Edition - LP1","s":"200014147","f":"SI","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t3y000007J5JkAAK","n":"Service Intelligence + Tableau - Performance Edition - LP1","s":"200014148","f":"SI","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01ted000007YFBtAAO","n":"Customer Experience Intelligence - Enterprise Edition","s":"200001369","f":"SI","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted0000018gSvAAI","n":"Customer Experience Intelligence - Unlimited Edition","s":"200001148","f":"SI","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted0000018gSwAAI","n":"Customer Experience Intelligence - Performance Edition","s":"200000855","f":"SI","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted0000014JUPAA2","n":"Customer Experience Intelligence - Enterprise Edition - LP1","s":"200001119","f":"SI","a":1,"ph":"AARR","eos":"","m":"C","fl":""},{"id":"01ted0000018gSxAAI","n":"Additional Customer Experience Intelligence Signals (100)","s":"200003678","f":"SI","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000001Bs7lAAC","n":"Customer Experience Intelligence Signals - Overages","s":"200001756","f":"SI","a":1,"ph":"","eos":"","m":"C","fl":"b"},{"id":"01ted000003U4XVAA0","n":"Agentforce for Service Add-on - Enterprise Edition","s":"200004055","f":"AFS","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000003U4Z7AAK","n":"Agentforce for Service Add-on - Unlimited Edition","s":"200004056","f":"AFS","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000003U4ajAAC","n":"Agentforce for Service Add-on - Performance Edition","s":"200004057","f":"AFS","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000008i4wAAAQ","n":"Agentforce for Service Add-on - Enterprise Edition - GovCloudPlus","s":"200009350","f":"AFS","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000008i8oTAAQ","n":"Agentforce for Service Add-on - Unlimited Edition - GovCloudPlus","s":"200009355","f":"AFS","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000007dj4TAAQ","n":"Help Agent Resolutions","s":"200009155","f":"AFS","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01t0M000006z1lcQAA","n":"Einstein Bots","s":"200013115","f":"AFS","a":1,"ph":"AARR","eos":"2026-08-18","m":"C","fl":""},{"id":"01t3y000007F9twAAC","n":"Einstein for Service Add-on - Enterprise Edition","s":"200002392","f":"AFS","a":1,"ph":"AARR","eos":"2025-06-17","m":"U","fl":""},{"id":"01t3y000007F9txAAC","n":"Einstein for Service Add-on - Unlimited Edition","s":"200002393","f":"AFS","a":1,"ph":"AARR","eos":"2025-06-17","m":"U","fl":""},{"id":"01t3y000007F9tyAAC","n":"Einstein for Service Add-on - Performance Edition","s":"200002394","f":"AFS","a":1,"ph":"AARR","eos":"2025-06-17","m":"U","fl":""},{"id":"01t3y000007bVIWAA2","n":"Einstein GPT for Service","s":"200002380","f":"AFS","a":1,"ph":"AARR","eos":"2024-02-29","m":"U","fl":""},{"id":"01t3y000007bVIbAAM","n":"Einstein GPT for Service (100 Credits)","s":"200002381","f":"AFS","a":1,"ph":"AARR","eos":"2024-02-29","m":"U","fl":""},{"id":"01t3y000007bVIqAAM","n":"Einstein GPT for Service - Overages","s":"200002384","f":"AFS","a":1,"ph":"AARR","eos":"2024-02-29","m":"C","fl":"b"},{"id":"01t0M000006sJZ3QAM","n":"Einstein for Service Add-on Original - Enterprise Edition","s":"200000337","f":"AFS","a":1,"ph":"AARR","eos":"2024-02-29","m":"U","fl":""},{"id":"01t0M000006sJZDQA2","n":"Einstein for Service Add-on Original - Unlimited Edition","s":"200000338","f":"AFS","a":1,"ph":"AARR","eos":"2024-02-29","m":"U","fl":""},{"id":"01t0M000006sJZIQA2","n":"Einstein for Service Add-on Original - Performance Edition","s":"200000339","f":"AFS","a":1,"ph":"AARR","eos":"2024-02-29","m":"U","fl":""},{"id":"01t0M000006sJaBQAU","n":"Einstein for Service Add-on Original - Enterprise Edition - Gov Cloud","s":"200000341","f":"AFS","a":1,"ph":"AARR","eos":"2026-06-01","m":"U","fl":""},{"id":"01t0M000006sJaGQAU","n":"Einstein for Service Add-on Original - Unlimited Edition - Gov Cloud","s":"200000342","f":"AFS","a":1,"ph":"AARR","eos":"2026-06-01","m":"U","fl":""},{"id":"01t0M000006sJaLQAU","n":"Einstein for Service Add-on Original - Performance Edition - Gov Cloud","s":"200000343","f":"AFS","a":1,"ph":"AARR","eos":"2026-06-01","m":"U","fl":""},{"id":"01t0M000006WWhbQAG","n":"Einstein for Service Add-on - Additional 10,000 Case Routing Predictions","s":"200000803","f":"AFS","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01t0M000006sJZ8QAM","n":"Einstein Next Best Action Additional Requests","s":"200000340","f":"AFS","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01t3y000006j8vuAAA","n":"Einstein Next Best Action Additional Requests (No Third-Party Terms)","s":"200000344","f":"AFS","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01t0M0000075VYyQAM","n":"Einstein Article Recommendation (Pilot)","s":"100003365","f":"AFS","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01t30000006iw9CAAQ","n":"Service Analytics (Pilot)","s":"100005192","f":"AFS","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t0M000006QuYmQAK","n":"Service Analytics App","s":"200012698","f":"AFS","a":1,"ph":"AARR","eos":"","m":"U","fl":""},{"id":"01t0M000006wm5EQAQ","n":"Service Analytics App - Value Bundle","s":"200012854","f":"AFS","a":1,"ph":"RR","eos":"","m":"U","fl":""},{"id":"01ted000008i8mrAAA","n":"Agentforce for Service Add-on - Enterprise Edition - GovCloudPlus","s":"200009354","f":"AFS","a":0,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000007dj9JAAQ","n":"Resolutions for Pre-commit Pay-as-you-go Unlimited","s":"200009158","f":"AFS","a":0,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M000007IC86QAG","n":"Einstein Bots","s":"100004728","f":"AFS","a":0,"ph":"","eos":"2021-06-14","m":"C","fl":""},{"id":"01t0M000006sJZwQAM","n":"Service Cloud Einstein","s":"100002421","f":"AFS","a":0,"ph":"","eos":"2021-06-14","m":"U","fl":""},{"id":"01t0M000006sJa1QAE","n":"Einstein Next Best Action Additional Requests","s":"100002422","f":"AFS","a":0,"ph":"","eos":"2021-06-14","m":"C","fl":""},{"id":"01t3y000006t4iMAAQ","n":"Einstein NBA Additional Requests (No Third Party Terms) - Air Gap","s":"200014050","f":"AFS","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t3y000006t4jYAAQ","n":"Service Cloud Einstein - Additional 10K - Air Gap - obsolete","s":"200014124","f":"AFS","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t3y000006t4jZAAQ","n":"Service Cloud Einstein - UE - Gov Cloud - Controlled Setting - Air Gap","s":"200014125","f":"AFS","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t0M000006QuYrQAK","n":"Analytics Cloud - Service Wave Analytics App - Gov Cloud","s":"200012700","f":"AFS","a":0,"ph":"","eos":"","m":"","fl":""},{"id":"01t0M000003fjTjQAI","n":"Service Analytics App","s":"100005342","f":"AFS","a":0,"ph":"","eos":"","m":"U","fl":""},{"id":"01t0M000006QuYwQAK","n":"Service Analytics App for Nonprofits","s":"200012699","f":"AFS","a":0,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000004m8DtAAI","n":"Agentforce IT Service Desk - Enterprise Edition","s":"200002752","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted000004m8FVAAY","n":"Agentforce IT Service Desk - Unlimited Edition","s":"200002753","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted000004m8H7AAI","n":"Agentforce IT Service Desk - Performance Edition","s":"200002754","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted0000068GVZAA2","n":"AI Agents for Employees - Enterprise Edition","s":"200009000","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted0000068GXBAA2","n":"AI Agents for Employees - Unlimited Edition","s":"200009001","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted0000068GYnAAM","n":"AI Agents for Employees - Performance Edition","s":"200009002","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted000004m8IjAAI","n":"AI Agents for Employees - Enterprise Edition - LP1","s":"200002755","f":"ITSM","a":1,"ph":"AR","eos":"","m":"C","fl":""},{"id":"01ted000004m8KLAAY","n":"AI Agents for Employees - Unlimited Edition - LP1","s":"200002756","f":"ITSM","a":1,"ph":"AR","eos":"","m":"C","fl":""},{"id":"01ted000004m8NZAAY","n":"AI Agents for Employees - Performance Edition - LP1","s":"200002757","f":"ITSM","a":1,"ph":"AR","eos":"","m":"C","fl":""},{"id":"01ted0000068GaPAAU","n":"AI Agents for Employees Add-on - Enterprise Edition","s":"200009003","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted0000068Gc1AAE","n":"AI Agents for Employees Add-on - Unlimited Edition","s":"200009004","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted0000068GddAAE","n":"AI Agents for Employees Add-on - Performance Edition","s":"200009005","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted000007zm7IAAQ","n":"Agentforce for IT Teams - Enterprise Edition","s":"200002781","f":"ITSM","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000007zm7JAAQ","n":"Agentforce for IT Teams - Unlimited Edition","s":"200002782","f":"ITSM","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted000007zm7KAAQ","n":"Agentforce for IT Teams - Performance Edition","s":"200002783","f":"ITSM","a":1,"ph":"","eos":"","m":"U","fl":""},{"id":"01ted00000801fRAAQ","n":"Agentforce IT Compliance Add-on - Enterprise Edition","s":"200002666","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted00000801nVAAQ","n":"Agentforce IT Compliance Add-on - Unlimited Edition","s":"200002667","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted00000801p7AAA","n":"Agentforce IT Compliance Add-on - Performance Edition","s":"200002668","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted0000068GfFAAU","n":"CMDB Enterprise (100)","s":"200009006","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted0000068GgrAAE","n":"CMDB Enterprise - Overages","s":"200009007","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":"b"},{"id":"01ted000007diRmAAI","n":"IT Hardware Assets (100)","s":"200009020","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted000007dipxAAA","n":"IT Hardware Assets - Overage","s":"200009021","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":"b"},{"id":"01ted000008xKnhAAE","n":"IT and HR Service Resolutions","s":"200005875","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01ted000008xKpJAAU","n":"IT and HR Service Resolutions (Pre-commit, Pay-as-you-go, Unlimited)","s":"200005876","f":"ITSM","a":1,"ph":"","eos":"","m":"C","fl":""},{"id":"01t3y0000075f7WAAQ","n":"Employee Experience for Public Sector - Performance Edition - LP","s":"200013321","f":"ITSM","a":0,"ph":"","eos":"","m":"U","fl":""},{"id":"01t3y0000075f7XAAQ","n":"Employee Experience for Public Sector - PxE (Restricted Use) - LP","s":"200013324","f":"ITSM","a":0,"ph":"","eos":"","m":"U","fl":""}];
+const TODAY = "2026-10-25";
+const FAM = {ED2:"Ediciones 2.0 (Core, Advanced, Max)",A1:"Agentforce 1 y Einstein 1",ED1:"Ediciones 1.0 y legado",AFS:"Agentforce e IA para Service",AFCC:"Agentforce Contact Center",PCC:"Partner Contact Center y Voice",DIG:"Mensajería digital",WEM:"Workforce Engagement",SI:"Service Intelligence y CXI",ITSM:"IT Service (ITSM)",KN:"Knowledge y add-ons"};
+const PH = {AARR:"Solo add/renovación/reducción",AR:"Solo add/reducción",RR:"Solo renovación/reducción",R:"Solo reducción"};
+const MET = {U:"Por usuario",C:"Por capacidad",O:"Fijo por org","":"—"};
+const ST = {v:"Vigente",bi:"Solo base instalada",pi:"Piloto",nv:"No vigente"};
+const REG = /GCPD|Gov ?Cloud|GovCloudPlus|HF OZ|Air Gap|Controlled Setting/i;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const link = id => "https://org62.lightning.force.com/lightning/r/Product2/" + id + "/view";
+
+DATA.forEach(r => {
+  if (!r.a) r.st = "nv";
+  else if (/Pilot/i.test(r.n)) r.st = "pi";
+  else if (r.ph || (r.eos && r.eos <= TODAY)) r.st = "bi";
+  else r.st = "v";
+  r.reg = REG.test(r.n);
+});
+const BYSKU = {}; DATA.forEach(r => { if (!BYSKU[r.s] || r.a) BYSKU[r.s] = r; });
+
+/* ledger */
+(function(){
+  const c = {v:0,bi:0,pi:0,nv:0}; DATA.forEach(r => c[r.st]++);
+  const bar = document.getElementById("ledgerBar"), keys = document.getElementById("ledgerKeys");
+  ["v","bi","pi","nv"].forEach((k, i) => {
+    const s = document.createElement("span"); s.className = "k-" + k; s.style.setProperty("--g", c[k]); s.style.transitionDelay = (120 + i * 90) + "ms"; s.title = ST[k] + ": " + c[k]; bar.appendChild(s);
+    keys.insertAdjacentHTML("beforeend", `<button type="button" class="lk" data-st="${k}" aria-pressed="false" aria-label="${c[k]} ${ST[k]}. Filtrar el catálogo por este estado."><b data-n="${c[k]}">${c[k]}</b><i class="dot k-${k}"></i><span>${ST[k]}</span></button>`);
+  });
+  keys.insertAdjacentHTML("beforeend", `<span class="lk-total">${DATA.length} SKUs en total</span>`);
+})();
+
+/* catalog */
+const ff = document.getElementById("ff");
+ff.innerHTML = '<option value="">Todas</option>' + Object.entries(FAM).map(([k,v]) => `<option value="${k}">${v}</option>`).join("");
+function detail(r){
+  const t = [];
+  if (r.ph.startsWith("REPL:")) t.push("Reemplazado por " + r.ph.slice(5));
+  else if (r.ph) t.push(PH[r.ph] || r.ph);
+  if (r.eos) t.push("Fin de venta " + r.eos);
+  let tags = "";
+  if (r.fl.includes("b")) tags += '<span class="tag">Billing only</span>';
+  if (r.reg) tags += '<span class="tag">Regulada</span>';
+  return esc(t.join("; ")) + (tags ? "<br>" + tags : "");
+}
+function hl(text, q){
+  const t = String(text), i = q ? t.toLowerCase().indexOf(q) : -1;
+  if (i < 0) return esc(t);
+  return esc(t.slice(0, i)) + "<mark>" + esc(t.slice(i, i + q.length)) + "</mark>" + esc(t.slice(i + q.length));
+}
+function render(){
+  const q = document.getElementById("q").value.trim().toLowerCase();
+  const f = ff.value, s = document.getElementById("fs").value, hr = document.getElementById("fr").checked;
+  const order = {v:0,bi:1,pi:2,nv:3};
+  const out = DATA.filter(r => (!f || r.f === f) && (!s || r.st === s) && (!hr || !r.reg) &&
+      (!q || r.n.toLowerCase().includes(q) || r.s.includes(q)))
+    .sort((a,b) => Object.keys(FAM).indexOf(a.f) - Object.keys(FAM).indexOf(b.f) || order[a.st]-order[b.st] || a.n.localeCompare(b.n));
+  document.getElementById("count").textContent = out.length + " de " + DATA.length + " SKUs";
+  document.getElementById("rows").innerHTML = out.map(r => `<tr>
+    <td class="sku">${hl(r.s, q)}</td>
+    <td class="nm"><a href="${link(r.id)}" target="_blank" rel="noopener">${hl(r.n, q)}</a></td>
+    <td>${FAM[r.f]}</td><td>${MET[r.m]}</td>
+    <td><span class="badge b-${r.st}">${ST[r.st]}</span></td>
+    <td class="note">${detail(r)}</td></tr>`).join("") || '<tr><td colspan="6">Ningún SKU coincide. Prueba con otra palabra o quita filtros.</td></tr>';
+}
+["q","ff","fs","fr"].forEach(id => document.getElementById(id).addEventListener("input", render));
+render();
+
+/* tabs */
+const TABS = [...document.querySelectorAll("nav.tabs button")];
+const THUMB = document.querySelector("nav.tabs .thumb");
+function moveThumb(b, instant){
+  THUMB.classList.toggle("instant", !!instant);
+  THUMB.style.width = b.offsetWidth + "px"; THUMB.style.transform = `translateX(${b.offsetLeft}px)`;
+  if (instant) { void THUMB.offsetWidth; THUMB.classList.remove("instant"); }
+}
+function selectTab(b){
+  TABS.forEach(x => { const on = x === b; x.setAttribute("aria-selected", on); x.tabIndex = on ? 0 : -1; });
+  document.querySelectorAll("section[role=tabpanel]").forEach(p => {
+    const on = p.id === b.getAttribute("aria-controls");
+    if (on && p.hidden) { p.hidden = false; p.classList.remove("in"); void p.offsetWidth; p.classList.add("in"); }
+    else if (!on) p.hidden = true;
+  });
+  moveThumb(b);
+  const n = b.parentElement;
+  if (b.offsetLeft < n.scrollLeft || b.offsetLeft + b.offsetWidth > n.scrollLeft + n.clientWidth) n.scrollTo({left: b.offsetLeft - 16, behavior: RMQ() ? "auto" : "smooth"});
+}
+TABS.forEach(b => b.addEventListener("click", () => selectTab(b)));
+document.querySelector("nav.tabs").addEventListener("keydown", e => {
+  const i = TABS.indexOf(document.activeElement); if (i < 0) return;
+  const j = {ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: TABS.length - 1}[e.key]; if (j === undefined) return;
+  e.preventDefault(); const t = TABS[(j + TABS.length) % TABS.length]; selectTab(t); t.focus();
+});
+
+/* ---------- BOM calculator ---------- */
+const M = {
+  base2:{svc:{Core:"200004515",Advanced:"200004516",Max:"200004517"},ss:{Core:"200004518",Advanced:"200004519",Max:"200004520"}},
+  base1:{EE:"200012637",UE:"200012643",PE:"210002670",A1:"200007761"},
+  afccFull:{EE:"200007170",UE:"200007171",PE:"200007172"}, afccDig:{EE:"200014250",UE:"200014251",PE:"200014252"},
+  afccPlus:{EE:"200007143",UE:"200007144",PE:"200007145"}, afccVoice:"200007173",
+  lc:"200007152", tf:"200007153", vin:"200007150", vout:"200007151",
+  pcc:{EE:"200001165",UE:"200001166",PE:"200001167"},
+  amz:{EE:{750:"200000944",2000:"200000945",5000:"200000946"},UE:{750:"200000954",2000:"200000955",5000:"200000956"},PE:{750:"200000957",2000:"200000958",5000:"200000959"}},
+  byoa:{EE:"200001726",UE:"200001727",PE:"200001728"},
+  wfm:{EE:"200001370",UE:"200001371",PE:"200001372"}, qm:{EE:"200009361",UE:"200009360"},
+  afs:{EE:"200004055",UE:"200004056",PE:"200004057"}, har:"200009155",
+  si:{EE:"200004910",UE:"200004915",PE:"200004911"}, sit:{EE:"200004912",UE:"200004914",PE:"200004913"}, cxi:"200003678",
+  itsd:{EE:"200002752",UE:"200002753",PE:"200002754"}, aie:{EE:"200009000",UE:"200009001",PE:"200009002"}, aieAdd:{EE:"200009003",UE:"200009004",PE:"200009005"},
+  cmdb:"200009006", ham:"200009020", wa:"200008690", sms:"200004207",
+  smsLc:"200014255", smsBrand:"200014265", smsCamp:"200014261", smsSc:"200014253", smsScSet:"200014262",
+  kn:{EE:"200000004",UE:"200000513",PE:"210002457"}
+};
+const INC = {
+  base2:"Licencia de usuario de la edición 2.0: consola de servicio, casos, Omni-Channel y lo empaquetado en la edición según el cheat sheet.",
+  base1:"Licencia de Service Cloud 1.0 para la edición de la org existente.",
+  afccFull:"Contact center unificado: voz nativa, voz digital y canales de mensajería, IVR e IVA inteligentes, reportería en tiempo real y analítica.",
+  afccDig:"Mensajería en canales digitales sobre Customer 360 y Agentforce (ex Digital Engagement).",
+  afccPlus:"AFCC más Workforce Management, Quality Management y asistencia de IA de Agentforce for Service.",
+  afccVoice:"Voz nativa e IVR/IVA inteligentes con reportería en tiempo real, sobre la licencia de Service.",
+  lc:"Un número long code de 10 dígitos de EE. UU. o Canadá por unidad.", tf:"Un número toll-free de EE. UU. o Canadá por unidad.",
+  vin:"Medición y facturación de minutos entrantes vía Digital Wallet, en paquetes de 100k créditos.", vout:"Medición y facturación de minutos salientes vía Digital Wallet, en paquetes de 100k créditos.",
+  pcc:"Integra la telefonía del partner del cliente con Service Cloud, junto a canales digitales y datos de Customer 360.",
+  amz:"Telefonía de Amazon Connect embebida con transcripción, setup, facturación y soporte de Salesforce, más minutos de plataforma y utterances de Lex.",
+  byoa:"Conecta la instancia de Amazon Connect que ya tiene el cliente.",
+  wfm:"Pronóstico, planificación de capacidad y gestión de turnos para cubrir la demanda con los niveles de servicio requeridos.",
+  qm:"Evaluación automática de cada interacción contra los criterios de calidad del cliente para detectar problemas de proceso y oportunidades de coaching.",
+  afs:"Guía, insights y automatización con IA para el equipo de servicio, construida sobre Data Cloud.",
+  har:"Resoluciones del agente de servicio de IA listo para usar en todos los canales.",
+  si:"Insights y IA en el flujo de trabajo para optimizar operaciones de servicio.", sit:"Service Intelligence más Tableau para exploración profunda de datos.",
+  cxi:"Señales adicionales de cliente (sentimiento, temas, frases clave, entidades) desde encuestas, llamadas, chats y casos.",
+  itsd:"Gestión de incidentes, problemas, cambios, releases y solicitudes; incluye Knowledge, aprobaciones, encuestas, CMDB, Discovery, Service Maps y licencia CRM de consola.",
+  aie:"Soporte conversacional con agentes de IA, portal del empleado, catálogo de servicios, IT Service en Slack y Teams, Knowledge y tickets.",
+  aieAdd:"Add-on de AI Agents for Employees; habilita a Paige.",
+  cmdb:"CMDB agéntica con Discovery con y sin agente, Service Graph e integraciones nativas, por cada 100 CIs.",
+  ham:"Gestión del ciclo de vida de activos de hardware sincronizada con la CMDB, por cada 100 activos.",
+  wa:"Créditos de mensajes de WhatsApp en paquetes de 1.000.", sms:"Créditos de mensajes SMS en paquetes de 1.000.",
+  smsLc:"Arriendo anual de long code SMS (rate group 1).", smsBrand:"Registro de 1 marca ante el ecosistema SMS en una geografía.",
+  smsCamp:"Registro de 1 campaña long code ante el ecosistema SMS.", smsSc:"Arriendo anual de short code SMS (rate group 1).", smsScSet:"Configuración de 1 short code SMS.",
+  kn:"Usuario con acceso solo a Knowledge para gestión de artículos."
+};
+const $ = id => document.getElementById(id);
+const num = id => Math.max(0, parseInt($(id).value || "0", 10) || 0);
+const radio = n => (document.querySelector(`input[name="${n}"]:checked`) || {}).value;
+const PRICE = {};
+
+function build(){
+  const port = radio("port"), region = $("c-region").value;
+  $("ed2box").hidden = port !== "p2"; $("ed1box").hidden = port !== "p1";
+  const voice = $("c-voice").value;
+  $("vNative").hidden = voice !== "native"; $("vAmz").hidden = voice !== "amz";
+  $("digBox").hidden = !$("c-dig").checked;
+  const ed = port === "p2" ? radio("ed2") : radio("ed1");
+  const isMax = port === "p2" && ed === "Max";
+  const isA1 = port === "p1" && ed === "A1";
+  const ek = port === "p2" ? (ed === "Core" ? "EE" : "UE") : (ed === "A1" ? "UE" : ed);
+  $("afsWrap").style.display = port === "p1" && !isA1 ? "" : "none";
+  $("plusWrap").style.display = isMax ? "none" : "";
+  const reps = num("c-reps"), sup = num("c-sup"), users = reps + sup;
+  const L = [], A = [];
+  const add = (sku, qty, key, cav, opt = {}) => { if (qty > 0 || opt.incl) L.push({sku, qty, key, inc: INC[key] || "", cav: cav || "", incl: !!opt.incl, ref: opt.ref, per: opt.per}); };
+
+  if (port === "p1") A.push(["info","Portfolio 1.0: úsalo solo para renovaciones o expansiones de clientes existentes. Para logos nuevos, cotiza Core, Advanced o Max."]);
+  if (ek === "UE" && port === "p2") A.push(["info", `Para los add-ons se usó la variante Unlimited como equivalente de ${ed}. Confirma la edición de org en el Quoting Guide antes de cotizar.`]);
+
+  // base
+  if (port === "p2") add(M.base2[radio("cloud")][ed], users, "base2", (radio("cloud")==="ss" ? "Incluye licencias de Sales y Service. " : "") + (isMax ? "Max no admite Restricted Use (RUL)." : "Si el cliente necesita uso restringido, existe la variante Restricted Use."));
+  else add(M.base1[ed], users, "base1", isA1 ? "Agentforce 1 ya fue reemplazado por Service Max en Portfolio 2.0; evalúa el swap." : "Verifica que la edición coincida con la de la org del cliente.");
+
+  // voice
+  const dig = $("c-dig").checked;
+  const plus = $("c-plus").checked && !isMax;
+  const nativeOK = region === "us" || region === "eu";
+  let usedPlus = false, usedFull = false;
+  if (voice === "native") {
+    if (!nativeOK) {
+      A.push(["warn", region === "anz" ? "La voz nativa de AFCC llega a Australia y Nueva Zelanda en noviembre de 2026. Hasta entonces, cotiza Partner Contact Center." : "La voz nativa de AFCC no está disponible en esta región (LATAM y APAC en FY28). Cotiza Partner Contact Center con telefonía de partner o Amazon Connect."]);
+    } else if (port === "p1" && !isA1) {
+      if (plus) { add(M.afccPlus[ek], reps, "afccPlus", "Reemplaza a AFCC, WFM y QM por separado. Confirma alcance de canales en el Quoting Guide."); usedPlus = true; }
+      else if (dig) { add(M.afccFull[ek], reps, "afccFull", "Requiere Service Cloud EE, UE o PxE como base."); usedFull = true; }
+      else add(M.afccVoice, reps, "afccVoice", "Requiere licencia base de Service Cloud.");
+    } else {
+      add(M.afccVoice, reps, "afccVoice", "No está incluida en ninguna edición 2.0 (clasificación tributaria). Se licencia por rep que atiende voz.", {ref: isMax ? 75 : 125, per:"m"});
+    }
+    if (nativeOK && region === "us") {
+      add(M.lc, num("c-lc"), "lc", "Un SKU por número.", {per:"a"}); add(M.tf, num("c-tf"), "tf", "Un SKU por número.", {per:"a"});
+      add(M.vin, num("c-vin"), "vin", "Dimensiona según minutos entrantes estimados.", {per:"a"}); add(M.vout, num("c-vout"), "vout", "Dimensiona según minutos salientes estimados.", {per:"a"});
+      A.push(["info","El consumo por sobre los créditos contratados se factura con los SKUs Voice Credits Usage y Overage (billing only)."]);
+    }
+    if (region === "eu") A.push(["info","UK y UE operan con Bring Your Own Carrier: los minutos y números se contratan con el carrier del cliente o uno certificado. No agregues Number Lease ni Voice Credits."]);
+  } else if (voice === "byot") {
+    if (isMax) add(M.pcc[ek], users, "pcc", "Incluido en Service Max; no se cotiza aparte.", {incl:true});
+    else add(M.pcc[ek], reps, "pcc", "El contrato de telefonía con el partner es aparte. Revisa la disponibilidad del partner en AppExchange.");
+  } else if (voice === "amz") {
+    const mins = $("c-mins").value;
+    add(M.amz[ek][mins], reps, "amz", "Telefonía, impuestos, tasas gubernamentales y overages de minutos o Lex se facturan con SKUs de pass-through. " + (isMax ? "Max ya incluye Partner Contact Center; valida con Deal Desk si corresponde un crédito." : ""));
+  } else if (voice === "byoa") {
+    add(M.byoa[ek], reps, "byoa", "El cliente debe cumplir los criterios de BYOA y tener su propia instancia de Amazon Connect." + (ek === "PE" ? " La variante PxE está en phase-out." : ""));
+  }
+
+  // digital
+  if (dig && !usedPlus && !usedFull) {
+    if (isMax) add(M.afccDig.UE, users, "afccDig", "Incluido en Service Max.", {incl:true});
+    else if (isA1) A.push(["info","Agentforce 1 incluía Digital Engagement. Al moverse a AFCC Digital, DE no puede coexistir en la misma org productiva."]);
+    else add(M.afccDig[ek], reps, "afccDig", "Add-on pagado en Core y Advanced. Digital Engagement está en fin de venta y no puede coexistir con AFCC Digital en la misma org productiva.");
+  }
+  if (dig) {
+    const wa = num("c-wa"), sms = num("c-sms"), lc = num("c-smslc"), sc = num("c-smssc");
+    add(M.wa, wa, "wa", "Confirma si los Messaging Credits incluidos con AFCC y Data Cloud cubren el volumen.", {per:"a"});
+    add(M.sms, sms, "sms", "Confirma si los Messaging Credits incluidos con AFCC y Data Cloud cubren el volumen.", {per:"a"});
+    if (lc > 0) { add(M.smsLc, lc, "smsLc", "El rate group depende de la geografía; usa la calculadora de Number Management.", {per:"a"}); add(M.smsBrand, 1, "smsBrand", "Una marca por geografía.", {per:"a"}); add(M.smsCamp, 1, "smsCamp", "Una por campaña long code.", {per:"a"}); }
+    if (sc > 0) { add(M.smsSc, sc, "smsSc", "El rate group depende de la geografía.", {per:"a"}); add(M.smsScSet, sc, "smsScSet", "Cargo de configuración por short code.", {per:"u"}); }
+  }
+
+  // WEM
+  if (!usedPlus) {
+    if (plus && (port === "p2" || isA1) && $("c-wfm").checked) {
+      add(M.afccPlus[ek], reps, "afccPlus", "Reemplaza a WFM y QM por separado. Confirma con el Quoting Guide si AFCC Plus aplica sobre ediciones 2.0."); usedPlus = true;
+    } else {
+      if ($("c-wfm").checked) { if (isMax) add(M.wfm.UE, reps, "wfm", "Incluido en Service Max.", {incl:true}); else add(M.wfm[ek], reps, "wfm", "Licencia a los reps planificados; agrega supervisores si gestionarán turnos."); }
+      if ($("c-qm").checked) {
+        if (isMax) add(M.qm.UE, reps, "qm", "Incluido en Service Max.", {incl:true});
+        else add(M.qm[ek === "PE" ? "UE" : ek], reps, "qm", (ek === "PE" ? "No hay SKU Performance en org62; se usó la variante Unlimited, confírmalo en el canal. " : "") + "Funciona con soluciones nativas y de partner, sin Data Cloud.", {ref:50, per:"m"});
+      }
+    }
+  }
+
+  // AI
+  if ($("c-afs").checked && port === "p1" && !isA1) add(M.afs[ek], users, "afs", "Add-on para ediciones 1.0. En 2.0 revisa qué capacidades de Agentforce trae la edición en el cheat sheet.");
+  add(M.har, num("c-har"), "har", "Modelo por resolución; dimensiona con el volumen de casos que resolverá el agente.", {per:"a"});
+  const si = $("c-si").value;
+  if (si !== "none") add(M[si][ek], num("c-siq"), si, "En Portfolio 2.0, CSI se mide con Flex Credits; usa la calculadora de Flex Credits de CSI.");
+  add(M.cxi, num("c-cxi"), "cxi", "En 2.0 las señales de experiencia no se miden; valida si el paquete adicional sigue siendo necesario.", {per:"a"});
+
+  // ITSM
+  const ful = num("c-ful"), emp = num("c-emp");
+  if (ful > 0) {
+    if (isMax) { add(M.itsd.UE, Math.min(10, ful), "itsd", "Max incluye 10 resolutores de IT Service Desk (UE).", {incl:true}); add(M.itsd.UE, Math.max(0, ful - 10), "itsd", "Resolutores adicionales a los 10 incluidos en Max."); }
+    else add(M.itsd[ek], ful, "itsd", "Promoción: incluye 1.000 activos HAM en EE o 2.000 en UE/PXE. Caso de uso de RR. HH. en org separada.");
+  }
+  if (emp > 0) {
+    if (isMax) add(M.aieAdd.UE, emp, "aieAdd", "Incluido en Service Max; habilita a Paige. Paige se cobra por resolución.", {incl:true});
+    else add(M.aie[ek], emp, "aie", "Dimensiona por empleado solicitante. Paige se cobra por resolución.");
+  }
+  add(M.cmdb, num("c-cmdb"), "cmdb", "El exceso se factura con CMDB Enterprise - Overages.", {per:"a"});
+  const hamQ = num("c-ham");
+  if (hamQ > 0) add(M.ham, hamQ, "ham", ful > 0 ? "Descuenta los activos de la promoción de IT Service Desk (10 o 20 paquetes según edición)." : "Por cada 100 activos.", {per:"a"});
+
+  // Knowledge
+  add(M.kn[ek] || M.kn.UE, num("c-kn"), "kn", "SKU en phase-out: solo para base instalada. Para nuevos usuarios evalúa la licencia de la edición.");
+
+  renderBOM(L, A);
+}
+
+function fmt(n){ return n.toLocaleString("es-CL", {style:"currency", currency:"USD", maximumFractionDigits:0}); }
+let LAST = [];
+function renderBOM(L, A){
+  LAST = L;
+  $("alerts").innerHTML = A.map(([t, m]) => `<div class="alert ${t === "info" ? "info" : ""}">${esc(m)}</div>`).join("");
+  const term = Math.max(1, num("c-term"));
+  $("bom").innerHTML = L.map((l, i) => {
+    const r = BYSKU[l.sku] || {n:"SKU " + l.sku, id:"", st:"v"};
+    const key = l.sku + (l.incl ? "i" : "");
+    if (PRICE[key] === undefined) PRICE[key] = {p: l.ref != null ? l.ref : "", per: l.per || (r.m === "U" ? "m" : "a")};
+    const pr = PRICE[key];
+    return `<div class="bomline ${l.incl ? "incl" : ""}" data-key="${key}" data-q="${l.qty}" style="--gc:var(--g-${gOf(l.key)})">
+      <div class="bl-top"><div><div class="bl-name">${r.id ? `<a href="${link(r.id)}" target="_blank" rel="noopener">${esc(r.n)}</a>` : esc(r.n)}</div>
+      <div class="bl-sku">SKU ${l.sku} <span class="badge b-${r.st}">${ST[r.st]}</span>${l.incl ? ' <span class="badge b-v">Incluido</span>' : ""}</div></div>
+      <div class="bl-qty">${l.qty.toLocaleString("es-CL")}</div></div>
+      <div class="bl-body"><div><h4>Qué incluye</h4><p>${esc(l.inc)}</p></div><div><h4>Salvedades</h4><p class="warn">${esc(l.cav)}</p></div></div>
+      ${l.incl ? "" : `<div class="bl-price"><label>Precio unitario USD <input type="number" min="0" step="any" data-k="${key}" data-f="p" value="${pr.p}"></label>
+      <select data-k="${key}" data-f="per" aria-label="Periodicidad"><option value="m" ${pr.per==="m"?"selected":""}>mensual</option><option value="a" ${pr.per==="a"?"selected":""}>anual</option><option value="u" ${pr.per==="u"?"selected":""}>único</option></select>
+      ${l.ref != null ? '<span class="ref">ref. Slack</span>' : ""}<span class="note" data-t="${i}"></span></div>`}
+    </div>`;
+  }).join("") || '<div class="panel empty">Ingresa usuarios o selecciona productos para generar el BOM.</div>';
+  $("bom").querySelectorAll("[data-k]").forEach(el => el.addEventListener("input", e => { PRICE[e.target.dataset.k][e.target.dataset.f] = e.target.value; totals(); }));
+  animateBOM();
+  totals();
+}
+function lineTotal(l, term){
+  if (l.incl) return 0;
+  const pr = PRICE[l.sku + (l.incl ? "i" : "")] || {}; const p = parseFloat(pr.p); if (!(p >= 0)) return null;
+  return l.qty * p * (pr.per === "m" ? term : pr.per === "a" ? term / 12 : 1);
+}
+function totals(){
+  const term = Math.max(1, num("c-term")); let t = 0, any = false;
+  LAST.forEach((l, i) => { const v = lineTotal(l, term); const el = document.querySelector(`[data-t="${i}"]`); if (v != null && !l.incl){ t += v; any = true; if (el) el.textContent = "Total: " + fmt(v); } else if (el) el.textContent = ""; });
+  tween($("tot"), any ? t : null); $("jumpTxt").textContent = LAST.length + " líneas" + (any ? ", " + fmt(t) : ""); tween($("totA"), any ? t * 12 / term : null); renderCompo(term);
+}
+function csv(){
+  const term = Math.max(1, num("c-term"));
+  const rows = [["SKU","Producto","Cantidad","Estado","Incluido en edición","Precio unitario USD","Periodicidad","Total contrato USD","Qué incluye","Salvedades"]];
+  LAST.forEach(l => { const r = BYSKU[l.sku] || {n:"",st:"v"}; const pr = PRICE[l.sku + (l.incl ? "i" : "")] || {}; const v = lineTotal(l, term);
+    rows.push([l.sku, r.n, l.qty, ST[r.st], l.incl ? "Sí" : "No", l.incl ? 0 : (pr.p || ""), {m:"mensual",a:"anual",u:"único"}[pr.per] || "", v == null ? "" : Math.round(v), l.inc, l.cav]); });
+  return rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+}
+$("dl").addEventListener("click", () => { const b = new Blob(["\ufeff" + csv()], {type:"text/csv"}); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "bom_service.csv"; a.click(); });
+$("cp").addEventListener("click", async () => { try { await navigator.clipboard.writeText(csv()); $("cpmsg").textContent = "BOM copiado como CSV. Pégalo en una hoja de cálculo."; ack($("cp")); } catch(e){ $("cpmsg").textContent = "El navegador bloqueó el portapapeles. Usa Descargar CSV."; } });
+/* ---------- motion and BOM chart helpers ---------- */
+const RMQ = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+const GRP = [
+  ["base","Licencias base",["base1","base2"]],
+  ["cc","Contact center y voz",["afccFull","afccPlus","afccVoice","lc","tf","vin","vout","pcc","amz","byoa"]],
+  ["msg","Mensajería digital",["afccDig","wa","sms","smsLc","smsBrand","smsCamp","smsSc","smsScSet"]],
+  ["wem","Workforce Engagement",["wfm","qm"]],
+  ["ai","IA e inteligencia",["afs","har","si","sit","cxi"]],
+  ["it","IT Service",["itsd","aie","aieAdd","cmdb","ham"]],
+  ["kn","Otros",["kn"]]
+];
+const GOF = {}; GRP.forEach(([g, , ks]) => ks.forEach(k => GOF[k] = g));
+function gOf(k){ return GOF[k] || "kn"; }
+let PREVQ = null;
+function animateBOM(){
+  const seen = new Map(), motion = PREVQ && !RMQ();
+  $("bom").querySelectorAll(".bomline").forEach(el => {
+    const k = el.dataset.key, q = el.dataset.q; seen.set(k, q);
+    if (!motion) return;
+    if (!PREVQ.has(k)) { el.classList.add("enter"); el.addEventListener("animationend", () => el.classList.remove("enter"), {once:true}); }
+    else if (PREVQ.get(k) !== q) el.querySelector(".bl-qty").classList.add("bump");
+  });
+  PREVQ = seen;
+}
+function tween(el, to){
+  cancelAnimationFrame(el._raf); clearTimeout(el._to);
+  if (to == null) { el.textContent = "—"; el._cur = null; return; }
+  const from = el._cur;
+  if (from == null || RMQ() || from === to) { el._cur = to; el.textContent = fmt(to); return; }
+  const t0 = performance.now(), d = 480;
+  const step = now => {
+    if (el._cur === to) return;
+    const k = Math.min(1, (now - t0) / d), ease = 1 - Math.pow(1 - k, 3);
+    el._cur = from + (to - from) * ease; el.textContent = fmt(el._cur);
+    if (k < 1) el._raf = requestAnimationFrame(step); else { el._cur = to; el.textContent = fmt(to); }
+  };
+  el._raf = requestAnimationFrame(step);
+  clearTimeout(el._to); el._to = setTimeout(() => { cancelAnimationFrame(el._raf); el._cur = to; el.textContent = fmt(to); }, d + 120);
+}
+function renderCompo(term){
+  const bar = $("compoBar"), sums = {}, cnt = {}; let priced = false, np = 0, nt = 0;
+  LAST.forEach(l => {
+    const g = gOf(l.key); cnt[g] = (cnt[g] || 0) + 1; if (!l.incl) nt++;
+    const v = lineTotal(l, term); if (v != null && !l.incl) { np++; sums[g] = (sums[g] || 0) + v; if (v > 0) priced = true; }
+  });
+  const by = priced ? sums : cnt, tot = Object.values(by).reduce((a, b) => a + b, 0);
+  if (!bar.children.length) GRP.forEach(([g]) => { const s = document.createElement("span"); s.dataset.g = g; s.style.background = `var(--g-${g})`; bar.appendChild(s); });
+  [...bar.children].forEach(s => { s.style.flexGrow = by[s.dataset.g] || 0; });
+  $("compoCap").textContent = !LAST.length ? "" : priced ? `Composición del costo por grupo, sobre ${np} de ${nt} líneas con precio` : "Líneas por grupo. Ingresa precios para ver la composición del costo.";
+  $("compoKeys").innerHTML = GRP.filter(([g]) => by[g]).map(([g, name]) => `<span><i class="dot" style="background:var(--g-${g})"></i>${name}<b>${priced ? fmt(by[g]) : by[g] + (by[g] === 1 ? " línea" : " líneas")}</b><small>${by[g] / tot < .01 ? "<1" : Math.round(by[g] / tot * 100)}%</small></span>`).join("");
+}
+function ack(btn){ clearTimeout(btn._t); btn.classList.add("ok"); btn._t = setTimeout(() => btn.classList.remove("ok"), 1800); }
+function pulse(el){ el.classList.remove("pulse"); void el.offsetWidth; el.classList.add("pulse"); }
+
+$("cform").addEventListener("input", build); $("cform").addEventListener("change", build);
+build();
+/* ---------- Comparar ediciones ---------- */
+const EDCOLS = [["EE","Enterprise (EE)",1],["UE","Unlimited (UE)",1],["A1","Agentforce 1 (A1E)",1],["Core","Core",2],["Adv","Advanced",2],["Max","Max",2]];
+const MX = [
+ ["Precio lista de referencia (USD PUPM)",{EE:"t:—",UE:"t:—",A1:"t:—",Core:"t:195",Adv:"t:395",Max:"t:550"},"Lista EE. UU. citada en Slack el 19 de octubre. Las ediciones 1.0 no se cotizan a logos nuevos."],
+ ["Consola de servicio, casos, Omni-Channel y entitlements",{EE:"y",UE:"y",A1:"y",Core:"y",Adv:"y",Max:"y"},""],
+ ["Knowledge (lectura y escritura)",{EE:"a:Add-on Knowledge",UE:"y",A1:"y",Core:"v:Trae Article Recommendations",Adv:"v:Ex UE",Max:"y:Hereda A1E"},""],
+ ["Chat y bots clásicos (Live Agent, Einstein Bots)",{EE:"a",UE:"y",A1:"y",Core:"n:Ver AFCC Digital",Adv:"n:Ver AFCC Digital",Max:"n:Ver AFCC Digital"},"Productos legados; en 2.0 el canal digital es AFCC Digital."],
+ ["Mensajería digital (AFCC Digital / Digital Engagement)",{EE:"a",UE:"a",A1:"y:Digital Engagement",Core:"a",Adv:"a",Max:"y:AFCC Digital"},"SMS y WhatsApp pueden requerir créditos y SKUs de números."],
+ ["Partner Contact Center (ex Service Cloud Voice)",{EE:"a",UE:"a",A1:"y",Core:"a",Adv:"a",Max:"y:Sin minutos de Amazon Connect"},""],
+ ["Voz nativa (Agentforce Contact Center Voice)",{EE:"a",UE:"a",A1:"a:Ref. USD 75",Core:"a:Ref. USD 125",Adv:"a:Ref. USD 125",Max:"a:Ref. USD 75"},"Nunca incluida: la telefonía PSTN tributa como servicio de telecomunicaciones. LATAM en FY28."],
+ ["Workforce Management",{EE:"a",UE:"a",A1:"a",Core:"a",Adv:"a",Max:"y"},"También viene en AFCC Plus."],
+ ["Quality Management",{EE:"a",UE:"a",A1:"a",Core:"a",Adv:"a",Max:"y"},"Add-on desde el 20 de octubre; ref. USD 50 por usuario al mes."],
+ ["Agentforce for Service (A4S)",{EE:"a",UE:"a",A1:"y",Core:"a",Adv:"a",Max:"y"},"Ver la sección A4X."],
+ ["Help Agent (agente de autoservicio)",{EE:"a:Por resolución",UE:"a:Por resolución",A1:"v",Core:"a:Vía add-on elegible",Adv:"y:~USD 2 por resolución",Max:"v:Verificar consumo"},"El acceso está en Advanced; el consumo se cobra por resolución."],
+ ["Flex Credits incluidos",{EE:"n",UE:"n",A1:"y:Entitlement de Flex",Core:"y:250K únicos",Adv:"y:750K únicos",Max:"y:2,5M anuales"},"Otra fuente cita 2,75M para Max; confirma la cifra en el cheat sheet."],
+ ["Headless 360 (agentes externos vía API/MCP)",{EE:"a",UE:"a",A1:"y",Core:"a",Adv:"a",Max:"y"},"Bolsa de 1.000 a 1.500 interacciones por usuario al mes, según la fuente."],
+ ["Data Cloud",{EE:"a",UE:"a",A1:"y:Data Services credits",Core:"v",Adv:"v",Max:"v:Hereda A1E"},""],
+ ["Full Copy Sandbox",{EE:"a:~30% adicional",UE:"y",A1:"y",Core:"v",Adv:"y",Max:"y"},""],
+ ["Archive y Backup & Recover",{EE:"a",UE:"a",A1:"v",Core:"a",Adv:"y:Aprovisionamiento",Max:"v"},""],
+ ["IT Service Desk y Paige",{EE:"a",UE:"a",A1:"a",Core:"a",Adv:"a",Max:"y:10 resolutores UE + AI Agents for Employees Add-on"},""],
+ ["Feedback Management, Slack y Tableau Next",{EE:"a",UE:"a",A1:"y:En A1E de Service",Core:"v",Adv:"v",Max:"v:Hereda A1E"},"Visto en el desglose de A1E de Service para FSC."],
+ ["Límites de plataforma",{EE:"t:Base",UE:"t:5x API, 10x objetos",A1:"t:Igual a UE",Core:"v:Ex EE",Adv:"v:Ex UE",Max:"v"},"UE frente a EE: 5.000 vs 1.000 llamadas API por usuario, 2.000 vs 200 objetos personalizados y 6x de almacenamiento de datos."],
+ ["Premier Success Plan",{EE:"a",UE:"y",A1:"v",Core:"v",Adv:"v",Max:"v"},""],
+ ["Variante Restricted Use (RUL)",{EE:"y",UE:"y",A1:"n",Core:"y",Adv:"y",Max:"n"},"No se crean RUL en Max para no fragmentar el bundle."]
+];
+const SYM = {y:"●",a:"+",n:"–",v:"?"};
+const SHOW = new Set(EDCOLS.map(c => c[0]));
+function cellHTML(v){
+  const [k, ...rest] = v.split(":"); const txt = rest.join(":");
+  if (k === "t") {
+    const n = parseFloat(txt), max = Math.max(...Object.values(MX[0][1]).map(x => parseFloat(x.slice(2)) || 0));
+    return `<span class="cell t">${esc(txt)}</span>` + (/^\d+$/.test(txt) && max ? `<span class="minibar" style="--w:${(n / max).toFixed(3)}" aria-hidden="true"></span>` : "");
+  }
+  return `<span class="cell ${k}" aria-label="${{y:"Incluido",a:"Add-on",n:"No aplica",v:"Verificar"}[k]}">${SYM[k]}</span>${txt ? `<small>${esc(txt)}</small>` : ""}`;
+}
+function renderMX(){
+  const cols = EDCOLS.filter(c => SHOW.has(c[0]));
+  const g1 = cols.filter(c => c[2] === 1).length, g2 = cols.length - g1;
+  let h = `<thead><tr><th class="cap"></th>${g1 ? `<th colspan="${g1}">1.0 legado</th>` : ""}${g2 ? `<th colspan="${g2}" class="grp2">Portfolio 2.0</th>` : ""}</tr>`;
+  h += `<tr><th class="cap">Capacidad</th>${cols.map((c,i) => `<th class="${c[2]===2 && (i===0 || cols[i-1][2]===1) ? "grp2" : ""}">${c[1]}</th>`).join("")}</tr></thead><tbody>`;
+  h += MX.map(([cap, vals, note]) => `<tr><td class="cap">${esc(cap)}${note ? `<div class="note" style="font-weight:400;margin-top:2px">${esc(note)}</div>` : ""}</td>${cols.map((c,i) => `<td class="c ${c[2]===2 && (i===0 || cols[i-1][2]===1) ? "grp2" : ""}">${cellHTML(vals[c[0]])}</td>`).join("")}</tr>`).join("");
+  document.getElementById("mx").innerHTML = h + "</tbody>";
+}
+document.querySelector(".colpick").innerHTML = EDCOLS.map(c => `<label><input type="checkbox" value="${c[0]}" checked><span>${c[1]}</span></label>`).join("");
+document.querySelector(".colpick").addEventListener("change", e => { e.target.checked ? SHOW.add(e.target.value) : SHOW.delete(e.target.value); if (!SHOW.size){ SHOW.add(e.target.value); e.target.checked = true; } renderMX(); });
+renderMX();
+
+const EX = [
+ ["Edición","Service Cloud - Core Edition","200004515","Rep de servicio en una operación sin IA ni canales avanzados.","Una distribuidora recibe reclamos por email y web. Cada correo crea un caso, Omni-Channel lo asigna al rep con capacidad libre y el entitlement mide el SLA de 24 horas. Al abrir el caso, el rep ve artículos recomendados."],
+ ["Edición","Service Cloud - Advanced Edition","200004516","Equipos que necesitan más escala, sandbox completo y autoservicio con IA.","Una aseguradora publica su base de conocimiento en el portal. Help Agent responde las consultas de estado de póliza y solo cobra cuando resuelve; lo que no resuelve se transforma en caso para un rep. El equipo de TI prueba cambios en un Full Copy Sandbox."],
+ ["Edición","Service Cloud - Max Edition","200004517","Contact centers omnicanal que quieren todo en un bundle.","Un retailer atiende WhatsApp y chat web con AFCC Digital, conecta su telefonía actual con Partner Contact Center, planifica turnos con WFM y evalúa el 100% de las interacciones con QM. Agentforce resume cada conversación para el rep. Además usa los 10 resolutores incluidos de IT Service Desk para su mesa interna."],
+ ["Edición","Sales & Service Cloud - Advanced Edition","200004519","Usuarios que venden y atienden en la misma licencia.","En una empresa B2B, el mismo ejecutivo gestiona oportunidades de renovación y los casos de soporte de sus cuentas."],
+ ["Edición","Service Cloud - Unlimited Edition (1.0)","200012643","Clientes existentes que renuevan o expanden en 1.0.","Un banco con 400 usuarios UE agrega 50 reps más a mitad de contrato manteniendo la misma edición de su org."],
+ ["Contact center","Agentforce Contact Center Voice","200007173","Reps que atienden llamadas con telefonía nativa de Salesforce.","Un cliente llama al número toll-free arrendado con Salesforce. Un agente de IA atiende en el IVR, identifica el pedido y transfiere al rep con la transcripción y el resumen en pantalla. Los minutos se descuentan de los Voice Credits."],
+ ["Contact center","Agentforce Contact Center Digital","200014251","Reps que atienden mensajería.","Un consumidor escribe por WhatsApp. Un agente de IA responde primero y, si hace falta, entrega la conversación a un rep con todo el historial del cliente en Customer 360."],
+ ["Contact center","Agentforce Contact Center Plus","200007144","Operaciones que necesitan contact center, WEM e IA en una sola línea.","Un BPO cotiza un solo SKU por rep que cubre canales, planificación de turnos, evaluación de calidad y asistencia de IA."],
+ ["Contact center","Partner Contact Center (BYOT)","200001166","Clientes que mantienen su proveedor de telefonía.","Una telco de LATAM sigue usando su plataforma de voz certificada en AppExchange; las llamadas aparecen en la consola de Service con softphone y transcripción, junto a los casos y canales digitales."],
+ ["Contact center","Partner Contact Center with Amazon Connect (2,000 mins)","200000955","Clientes que quieren telefonía llave en mano facturada por Salesforce.","Una empresa sin central telefónica activa Amazon Connect desde Salesforce; cada rep trae 2.000 minutos de plataforma y utterances de Lex. El exceso y los impuestos se facturan con SKUs de pass-through."],
+ ["Operación","Workforce Management","200001371","Planificadores y reps del contact center.","El planificador pronostica el volumen de la semana del Cyber, genera turnos para cubrir el nivel de servicio y los reps ven su horario en el escritorio o el móvil."],
+ ["Operación","Quality Management","200009360","Supervisores y analistas de calidad.","Cada interacción de voz, chat o email se califica automáticamente contra el formulario de calidad. El supervisor ve un mapa de calor de brechas y agenda coaching con los reps de menor puntaje."],
+ ["IA","Agentforce for Service Add-on (A4S)","200004056","Reps en ediciones EE, UE, PxE, Core o Advanced.","El rep pide a Agentforce que resuma un caso de 40 correos, redacte la respuesta según la política de devoluciones y actualice los campos. El uso por el rep no consume Flex Credits."],
+ ["IA","Help Agent Resolutions","200009155","Volumen de autoservicio, no usuarios.","El agente de autoservicio del sitio resuelve 3.000 consultas de seguimiento de pedido al mes; cada resolución exitosa consume una unidad."],
+ ["IA","Service Intelligence","200004915","Supervisores y líderes de servicio.","El gerente de servicio ve en el flujo de trabajo qué motivos de contacto crecen, qué colas incumplen SLA y recibe recomendaciones de IA para reasignar capacidad."],
+ ["IA","Additional Customer Experience Intelligence Signals (100)","200003678","Paquetes de señales de cliente.","CXI detecta en encuestas y chats que el sentimiento negativo sobre un producto subió esta semana y alerta al equipo de producto."],
+ ["IT Service","Agentforce IT Service Desk","200002753","Resolutores de la mesa de ayuda de TI.","Un técnico gestiona incidentes, cambios y problemas con CMDB y mapas de servicio; la IA clasifica el ticket, sugiere la causa raíz y redacta el cierre."],
+ ["IT Service","AI Agents for Employees","200009001","Empleados que piden ayuda a TI.","Un empleado escribe a Paige en Slack o Teams que no le funciona la VPN; Paige ejecuta el flujo de reinicio y solo se cobra si resuelve."],
+ ["IT Service","CMDB Enterprise (100)","200009006","Paquetes de 100 CIs.","Discovery mapea servidores y aplicaciones; cuando cae un servicio, el agente identifica qué aplicaciones dependen de él."],
+ ["IT Service","IT Hardware Assets (100)","200009020","Paquetes de 100 activos.","TI sigue cada notebook desde la compra hasta la baja certificada, sincronizado con la CMDB."],
+ ["Uso especial","Flex User y Off-Peak Shift User","200012648","Usuarios ocasionales o de turno nocturno.","Personal temporal de temporada alta o reps de turno nocturno. Requieren aprobación de Deal Desk y el exceso de logins se factura aparte."],
+ ["Uso especial","Restricted Use (RUL)","200004523","Usuarios con alcance contractual limitado.","Un equipo de back-office que solo usa casos y objetos acotados por contrato; no disponible en Max."],
+ ["Uso especial","Knowledge-only","200000513","Autores de conocimiento que no atienden casos.","Un equipo de documentación redacta y publica artículos sin licencia completa de Service. SKU en phase-out, solo base instalada."],
+ ["Uso especial","Contact Center Number Lease y Voice Credits","200007153","Números y minutos de voz nativa (EE. UU. y Canadá).","El cliente arrienda 2 toll-free y compra 1 paquete de 100k créditos entrantes para su línea de atención."]
+];
+function renderEX(){
+  const f = document.getElementById("exf").value;
+  document.getElementById("exgrid").innerHTML = EX.filter(e => !f || e[0] === f).map(([t, n, s, who, ex]) => {
+    const r = BYSKU[s];
+    return `<article class="ex"><h3>${esc(n)}</h3><div class="meta">${esc(t)}${r ? `, <a href="${link(r.id)}" target="_blank" rel="noopener">SKU ${s}</a>` : `, SKU ${s}`}</div>
+    <p><b>Quién la usa</b>${esc(who)}</p><p class="scn"><b>Ejemplo</b>${esc(ex)}</p></article>`;
+  }).join("");
+}
+document.getElementById("exf").addEventListener("change", renderEX); renderEX();
+
+const PICK = [
+ ["Casos por email y web, sin IA ni canales avanzados","Service Core. Agrega Knowledge, AFCC Digital o A4S solo si el caso lo requiere.",{port:"p2",ed2:"Core",voice:"none",dig:false,wfm:false,qm:false}],
+ ["Autoservicio con IA, más límites o sandbox completo","Service Advanced: incluye acceso a Help Agent y 750K Flex Credits únicos.",{port:"p2",ed2:"Advanced",voice:"none",dig:true,wfm:false,qm:false,har:5}],
+ ["Contact center omnicanal con IA, WFM y QM","Service Max suele salir mejor que Advanced más add-ons. Compara ambos en el BOM.",{port:"p2",ed2:"Max",voice:"byot",dig:true,wfm:true,qm:true}],
+ ["Voz nativa en EE. UU., Canadá, UK o UE","Cualquier edición más AFCC Voice. En LATAM usa Partner Contact Center hasta FY28.",{port:"p2",ed2:"Max",voice:"native",region:"us",dig:true,wfm:true,qm:true}],
+ ["Cliente 1.0 que solo quiere IA para sus reps","A4S sobre su edición actual, o evalúa el upgrade a Max si también necesita canales y WEM.",{port:"p1",ed1:"UE",voice:"none",dig:false,wfm:false,qm:false,afs:true}],
+ ["Mesa de ayuda de TI","IT Service Desk por resolutor y AI Agents for Employees por empleado; con Max los primeros 10 resolutores van incluidos.",{port:"p2",ed2:"Max",voice:"none",dig:false,wfm:false,qm:false,ful:25,emp:500}]
+];
+document.getElementById("pick").innerHTML = PICK.map((p, i) => `<div class="pk"><div><h3>${esc(p[0])}</h3><p>${esc(p[1])}</p></div><button class="btn ghost" type="button" data-pk="${i}">Armar este BOM</button></div>`).join("");
+document.getElementById("pick").addEventListener("click", e => {
+  const b = e.target.closest("[data-pk]"); if (!b) return; const s = PICK[+b.dataset.pk][2];
+  const setR = (n, v) => { const el = document.querySelector(`input[name="${n}"][value="${v}"]`); if (el) el.checked = true; };
+  setR("port", s.port); if (s.ed2) setR("ed2", s.ed2); if (s.ed1) setR("ed1", s.ed1);
+  if (s.region) $("c-region").value = s.region;
+  $("c-voice").value = s.voice; $("c-dig").checked = s.dig; $("c-wfm").checked = s.wfm; $("c-qm").checked = s.qm;
+  $("c-afs").checked = !!s.afs; $("c-plus").checked = false;
+  $("c-har").value = s.har || 0; $("c-ful").value = s.ful || 0; $("c-emp").value = s.emp || 0;
+  build(); document.getElementById("b-bom").click(); window.scrollTo({top: $("tabSentinel").offsetTop, behavior: RMQ() ? "auto" : "smooth"}); pulse($("bomHead"));
+});
+
+const GLO = [["EE / UE / PxE / PE","Enterprise, Unlimited, Performance y Professional Edition (portafolio 1.0)."],["Core / Advanced / Max","Ediciones de Portfolio 2.0, vigentes desde septiembre de 2026."],["A1E / E1E","Agentforce 1 Edition y su antecesora Einstein 1 Edition."],["A4X / A4S","Agentforce for X: add-ons por usuario por nube. A4S es Agentforce for Service."],["AFCC","Agentforce Contact Center, el contact center nativo (voz y digital)."],["PCC / SCV","Partner Contact Center, antes Service Cloud Voice: voz con telefonía de partner."],["BYOT / BYOA / BYOC","Bring Your Own Telephony, Amazon Connect o Carrier."],["DE","Digital Engagement, mensajería legada reemplazada por AFCC Digital."],["WEM / WFM / QM","Workforce Engagement Management, compuesto por Workforce Management y Quality Management."],["CSI / CXI","Service Intelligence y Customer Experience Intelligence (señales de cliente)."],["HPI","Headless Platform Interaction: cada acción de un agente externo sobre Salesforce."],["Flex Credits","Moneda de consumo de Agentforce y otros servicios medidos."],["RUL","Restricted Use License, licencia con alcance contractual limitado."],["LP / LP1","Variantes de lista de precios anteriores; suelen estar en phase-out."],["GCPD / GovCloud / HF OZ","Variantes reguladas para sector público o residencia de datos."],["PUPM","Por usuario por mes."],["ITSM / CMDB / HAM","IT Service Management, base de configuración y gestión de activos de hardware."]];
+document.getElementById("glo").innerHTML = GLO.map(([t, d]) => `<dt>${esc(t)}</dt><dd>${esc(d)}</dd>`).join("");
+document.querySelectorAll(".subnav a").forEach(a => a.addEventListener("click", e => { e.preventDefault(); document.querySelector(a.getAttribute("href")).scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"}); }));
+
+/* ---------- hero chart: SKUs por familia y estado ---------- */
+(function(){
+  const KEYS = ["v","bi","pi","nv"], fc = $("famChart"), fig = $("famFig"), det = $("famDetail"), led = document.querySelector(".ledger");
+  const fs = $("fs"), DEF = det.textContent;
+  const rows = Object.keys(FAM).map(f => {
+    const c = {v:0,bi:0,pi:0,nv:0}; DATA.forEach(r => { if (r.f === f) c[r.st]++; });
+    return [f, c, KEYS.reduce((a, k) => a + c[k], 0)];
+  });
+  const max = Math.max(...rows.map(r => r[2]));
+  const say = (f, c, n) => `${FAM[f]}: ${n} SKUs. ` + KEYS.filter(k => c[k]).map(k => `${c[k]} ${ST[k].toLowerCase()}`).join(", ") + ".";
+  $("famTotal").textContent = rows.length + " familias";
+  fc.innerHTML = rows.map(([f, c, n], i) => `<button type="button" class="fr" data-f="${f}" aria-pressed="false" style="--i:${i}" aria-label="${esc(say(f, c, n))} Filtrar el catálogo por esta familia.">
+    <span class="fr-name">${esc(FAM[f])}</span>
+    <span class="fr-track"><span class="fr-fill" style="width:${(n / max * 100).toFixed(2)}%">${KEYS.filter(k => c[k]).map(k => `<i class="k-${k}" style="flex-grow:${c[k]}"></i>`).join("")}</span></span>
+    <b class="fr-n">${n}</b></button>`).join("");
+  const info = {}; rows.forEach(([f, c, n]) => info[f] = say(f, c, n));
+
+  function sync(){
+    fc.querySelectorAll(".fr").forEach(b => b.setAttribute("aria-pressed", b.dataset.f === ff.value));
+    fig.classList.toggle("filtering", !!ff.value);
+    led.querySelectorAll(".lk").forEach(b => b.setAttribute("aria-pressed", b.dataset.st === fs.value));
+    led.classList.toggle("filtering", !!fs.value);
+    det.textContent = ff.value ? info[ff.value] : DEF;
+  }
+  function apply(){
+    render(); sync();
+    selectTab($("b-cat"));
+    const r = $("count").getBoundingClientRect();
+    if (r.top < 0 || r.top > innerHeight - 160) window.scrollTo({top: $("tabSentinel").offsetTop, behavior: RMQ() ? "auto" : "smooth"});
+  }
+  fc.addEventListener("click", e => { const b = e.target.closest(".fr"); if (!b) return; ff.value = ff.value === b.dataset.f ? "" : b.dataset.f; apply(); });
+  led.addEventListener("click", e => { const b = e.target.closest(".lk"); if (!b) return; fs.value = fs.value === b.dataset.st ? "" : b.dataset.st; apply(); });
+  const peek = e => { const b = e.target.closest(".fr"); det.textContent = b ? info[b.dataset.f] : (ff.value ? info[ff.value] : DEF); };
+  fc.addEventListener("pointerover", peek); fc.addEventListener("focusin", peek);
+  fc.addEventListener("pointerleave", () => sync()); fc.addEventListener("focusout", () => sync());
+  ["ff","fs"].forEach(id => $(id).addEventListener("input", sync));
+
+  /* one orchestrated load moment: bars grow in, counts tick up */
+  const nums = [...led.querySelectorAll("b[data-n]")];
+  if (!RMQ()) {
+    nums.forEach(b => b.textContent = "0");
+    const t0 = performance.now() + 120, d = 900; let done = false;
+    const tick = now => {
+      if (done) return;
+      const k = Math.max(0, Math.min(1, (now - t0) / d)), ease = 1 - Math.pow(1 - k, 3);
+      nums.forEach(b => b.textContent = Math.round(+b.dataset.n * ease));
+      if (k < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    setTimeout(() => { done = true; nums.forEach(b => b.textContent = b.dataset.n); }, d + 400);
+  }
+  requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.add("ready")));
+})();
+
+/* ---------- tab bar: height token, scroll-edge, thumb ---------- */
+(function(){
+  const bar = $("tabbar"), root = document.documentElement;
+  const setH = () => root.style.setProperty("--tabh", bar.offsetHeight + "px");
+  setH(); moveThumb(TABS.find(t => t.getAttribute("aria-selected") === "true"), true);
+  addEventListener("resize", () => { setH(); moveThumb(TABS.find(t => t.getAttribute("aria-selected") === "true"), true); });
+  if (document.fonts) document.fonts.ready.then(() => { setH(); moveThumb(TABS.find(t => t.getAttribute("aria-selected") === "true"), true); });
+  new IntersectionObserver(([en]) => bar.classList.toggle("stuck", !en.isIntersecting)).observe($("tabSentinel"));
+})();
+
+/* ---------- matrix: column highlight follows the pointer ---------- */
+(function(){
+  const mx = $("mx"); let col = -1;
+  const mark = i => {
+    if (i === col) return; col = i;
+    mx.querySelectorAll(".hc").forEach(c => c.classList.remove("hc"));
+    if (i < 1) return;
+    mx.querySelectorAll("tbody tr, thead tr:last-child").forEach(tr => { const c = tr.cells[i]; if (c) c.classList.add("hc"); });
+  };
+  mx.addEventListener("pointerover", e => { const c = e.target.closest("td,th"); if (!c || c.closest("thead tr:first-child")) return; mark(c.cellIndex); });
+  mx.addEventListener("pointerleave", () => mark(-1));
+})();
+
+/* ---------- editions: subnav follows the section in view ---------- */
+(function(){
+  const links = [...document.querySelectorAll(".subnav a")];
+  const io = new IntersectionObserver(es => es.forEach(en => {
+    if (!en.isIntersecting) return;
+    links.forEach(a => a.getAttribute("href") === "#" + en.target.id ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current"));
+  }), {rootMargin: "-35% 0px -55% 0px"});
+  links.forEach(a => io.observe(document.querySelector(a.getAttribute("href"))));
+})();
+</script>
+</body>
+</html>
